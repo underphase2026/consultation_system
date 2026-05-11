@@ -15,6 +15,8 @@ const app_service_1 = require("./app.service");
 const auth_module_1 = require("./domains/auth/auth.module");
 const users_module_1 = require("./domains/users/users.module");
 const stores_module_1 = require("./domains/stores/stores.module");
+const contracts_module_1 = require("./domains/contracts/contracts.module");
+const crm_module_1 = require("./domains/crm/crm.module");
 const public_data_module_1 = require("./infrastructure/public-data/public-data.module");
 const database_module_1 = require("./infrastructure/database/database.module");
 let AppModule = class AppModule {
@@ -33,6 +35,8 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
             stores_module_1.StoresModule,
+            contracts_module_1.ContractsModule,
+            crm_module_1.CrmModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

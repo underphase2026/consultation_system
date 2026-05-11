@@ -3,54 +3,59 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { User } from './interfaces/user.interface';
+import { User } from './entities/user.entity';
 import { Role } from '../../common/enums/role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  /** 인메모리 저장소 (추후 TypeORM Repository로 교체) */
-  private readonly store = new Map<string, User>();
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   // ─────────────────────────────────────────────
   // Helpers
   // ─────────────────────────────────────────────
 
-  /** 영문 대소문자 6자리 추천인 코드 생성 (중복 체크 포함) */
-  generateReferralCode(): string {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let code: string;
-    do {
+  async generateReferralCode(): Promise<string> {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let code = '';
+    let isUsed = true;
+    
+    while (isUsed) {
       code = Array.from({ length: 6 }, () =>
         chars.charAt(Math.floor(Math.random() * chars.length)),
       ).join('');
-    } while (this.isReferralCodeUsed(code));
+      isUsed = await this.isReferralCodeUsed(code);
+    }
     return code;
   }
 
-  private isReferralCodeUsed(code: string): boolean {
-    for (const user of this.store.values()) {
-      if (user.referralCode === code) return true;
-    }
-    return false;
+  private async isReferralCodeUsed(code: string): Promise<boolean> {
+    const count = await this.userRepository.count({ where: { referralCode: code } });
+    return count > 0;
   }
 
   // ─────────────────────────────────────────────
   // Finders
   // ─────────────────────────────────────────────
 
-  async findByPhoneNumber(phoneNumber: string): Promise<User | undefined> {
-    for (const user of this.store.values()) {
-      if (user.phoneNumber === phoneNumber) return user;
-    }
-    return undefined;
+  async findByPhoneNumber(phoneNumber: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { phoneNumber },
+      relations: ['terms'],
+    });
   }
 
-  async findById(id: string): Promise<User | undefined> {
-    return this.store.get(id);
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['terms'],
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -63,7 +68,11 @@ export class UsersService {
     email?: string;
     password: string;
     role: Role;
-    marketingAgreed: boolean;
+    terms: {
+      serviceAgreed: boolean;
+      privacyAgreed: boolean;
+      marketingAgreed: boolean;
+    };
   }): Promise<User> {
     const existing = await this.findByPhoneNumber(data.phoneNumber);
     if (existing) {
@@ -73,24 +82,28 @@ export class UsersService {
       });
     }
 
-    const user: User = {
-      id: uuidv4(),
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const referralCode = await this.generateReferralCode();
+
+    const user = this.userRepository.create({
       name: data.name,
       phoneNumber: data.phoneNumber,
       email: data.email,
-      password: await bcrypt.hash(data.password, 10),
+      password: hashedPassword,
       role: data.role,
-      referralCode: this.generateReferralCode(),
-      marketingAgreed: data.marketingAgreed,
-      createdAt: new Date(),
-    };
+      referralCode,
+      terms: {
+        serviceAgreed: data.terms.serviceAgreed,
+        privacyAgreed: data.terms.privacyAgreed,
+        marketingAgreed: data.terms.marketingAgreed,
+      },
+    });
 
-    this.store.set(user.id, user);
-    return user;
+    return this.userRepository.save(user);
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {
-    const user = this.store.get(id);
+    const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException({
         code: 'USER_NOT_FOUND',
@@ -106,20 +119,19 @@ export class UsersService {
           message: '이미 사용 중인 휴대폰 번호입니다.',
         });
       }
+      user.phoneNumber = dto.phoneNumber;
     }
 
-    const updated: User = {
-      ...user,
-      name: dto.name ?? user.name,
-      phoneNumber: dto.phoneNumber ?? user.phoneNumber,
-      password: dto.password
-        ? await bcrypt.hash(dto.password, 10)
-        : user.password,
-      marketingAgreed: dto.marketingAgreed ?? user.marketingAgreed,
-    };
+    if (dto.name) user.name = dto.name;
+    if (dto.password) {
+      user.password = await bcrypt.hash(dto.password, 10);
+    }
+    
+    if (dto.marketingAgreed !== undefined && user.terms) {
+      user.terms.marketingAgreed = dto.marketingAgreed;
+    }
 
-    this.store.set(id, updated);
-    return updated;
+    return this.userRepository.save(user);
   }
 
   async updatePasswordByPhone(
@@ -134,7 +146,7 @@ export class UsersService {
       });
     }
     user.password = await bcrypt.hash(newPassword, 10);
-    this.store.set(user.id, user);
+    await this.userRepository.save(user);
   }
 
   async validatePassword(user: User, plain: string): Promise<boolean> {

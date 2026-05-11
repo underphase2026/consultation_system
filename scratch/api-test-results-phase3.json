@@ -1,0 +1,320 @@
+{
+  "Register Owner": [
+    {
+      "reqDto": {
+        "phoneNumber": "01011110004",
+        "password": "Password123!",
+        "name": "사장님4",
+        "isPhoneAuth": true,
+        "email": "owner4@test.com",
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": false
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "102da200-e0a5-4e57-86fa-13c64f2dc9ab",
+            "referralCode": "TNNTYJ"
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "phoneNumber": "01011110005",
+        "password": "Password123!",
+        "name": "사장님5",
+        "isPhoneAuth": true,
+        "email": "owner5@test.com",
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": false
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "385ba313-921a-4c74-9fbf-1ac0c0fffa80",
+            "referralCode": "nxEBuc"
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "phoneNumber": "01011110006",
+        "password": "Password123!",
+        "name": "사장님6",
+        "isPhoneAuth": true,
+        "email": "owner6@test.com",
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": false
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "32e1009c-ad0d-4f90-891c-384a559c8c4c",
+            "referralCode": "dkcgRG"
+          }
+        }
+      }
+    }
+  ],
+  "Register Staff": [
+    {
+      "reqDto": {
+        "phoneNumber": "01022220004",
+        "password": "Password123!",
+        "name": "직원4",
+        "isPhoneAuth": true,
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": true
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "77ebdc96-d1b6-4504-8ae0-2b25bff20d07"
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "phoneNumber": "01022220005",
+        "password": "Password123!",
+        "name": "직원5",
+        "isPhoneAuth": true,
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": true
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "27bae30e-138d-4758-81c0-233008a3afd2"
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "phoneNumber": "01022220006",
+        "password": "Password123!",
+        "name": "직원6",
+        "isPhoneAuth": true,
+        "terms": {
+          "serviceAgreed": true,
+          "privacyAgreed": true,
+          "marketingAgreed": true
+        }
+      },
+      "res": {
+        "status": 201,
+        "data": {
+          "success": true,
+          "data": {
+            "userId": "528840f2-7db5-4921-8dff-5c3cbef1c02c"
+          }
+        }
+      }
+    }
+  ],
+  "Login": [
+    {
+      "type": "Owner",
+      "reqDto": {
+        "phoneNumber": "01011110004",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDJkYTIwMC1lMGE1LTRlNTctODZmYS0xM2M2NGYyZGM5YWIiLCJwaG9uZU51bWJlciI6IjAxMDExMTEwMDA0Iiwicm9sZSI6Ik9XTkVSIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.NiHPIHUKqjBI6sKe6ShMluThh4HltCUXmxbIREPOiUI",
+            "role": "OWNER",
+            "userId": "102da200-e0a5-4e57-86fa-13c64f2dc9ab"
+          }
+        }
+      }
+    },
+    {
+      "type": "Staff",
+      "reqDto": {
+        "phoneNumber": "01022220004",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3N2ViZGM5Ni1kMWI2LTQ1MDQtOGFlMC0yYjI1YmZmMjBkMDciLCJwaG9uZU51bWJlciI6IjAxMDIyMjIwMDA0Iiwicm9sZSI6IlNUQUZGIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.CcVNqzc2RAPO6iSnYoB1XbZOOsIfZeovbYZ23xmpH68",
+            "role": "STAFF",
+            "userId": "77ebdc96-d1b6-4504-8ae0-2b25bff20d07"
+          }
+        }
+      }
+    },
+    {
+      "type": "Owner",
+      "reqDto": {
+        "phoneNumber": "01011110005",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzODViYTMxMy05MjFhLTRjNzQtOWZiZi0xYWMwYzBmZmZhODAiLCJwaG9uZU51bWJlciI6IjAxMDExMTEwMDA1Iiwicm9sZSI6Ik9XTkVSIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.CAmE5sDfgiP2QLBDd7xWXDmjP6R2kAWswRBE6nsx4lo",
+            "role": "OWNER",
+            "userId": "385ba313-921a-4c74-9fbf-1ac0c0fffa80"
+          }
+        }
+      }
+    },
+    {
+      "type": "Staff",
+      "reqDto": {
+        "phoneNumber": "01022220005",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyN2JhZTMwZS0xMzhkLTQ3NTgtODFjMC0yMzMwMDhhM2FmZDIiLCJwaG9uZU51bWJlciI6IjAxMDIyMjIwMDA1Iiwicm9sZSI6IlNUQUZGIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.s3SPSYWO5HbsZr4JfsTWCq6z2VZIK2jiiVrJJVBTdlk",
+            "role": "STAFF",
+            "userId": "27bae30e-138d-4758-81c0-233008a3afd2"
+          }
+        }
+      }
+    },
+    {
+      "type": "Owner",
+      "reqDto": {
+        "phoneNumber": "01011110006",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMmUxMDA5Yy1hZDBkLTRmOTAtODkxYy0zODRhNTU5YzhjNGMiLCJwaG9uZU51bWJlciI6IjAxMDExMTEwMDA2Iiwicm9sZSI6Ik9XTkVSIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.WQW6t_VuKpAa8kcEujZbqylcOwd5XOtIZz-u8bQMxf4",
+            "role": "OWNER",
+            "userId": "32e1009c-ad0d-4f90-891c-384a559c8c4c"
+          }
+        }
+      }
+    },
+    {
+      "type": "Staff",
+      "reqDto": {
+        "phoneNumber": "01022220006",
+        "password": "Password123!"
+      },
+      "res": {
+        "status": 200,
+        "data": {
+          "success": true,
+          "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1Mjg4NDBmMi03ZGI1LTQ5MjEtOGRmZi01YzNjYmVmMWMwMmMiLCJwaG9uZU51bWJlciI6IjAxMDIyMjIwMDA2Iiwicm9sZSI6IlNUQUZGIiwiaWF0IjoxNzc4NDgyNzc1LCJleHAiOjE3NzkwODc1NzV9.YvxGokgiUVMrF_UbfhH3ezYS-RarKMIq3mbysPJio7k",
+            "role": "STAFF",
+            "userId": "528840f2-7db5-4921-8dff-5c3cbef1c02c"
+          }
+        }
+      }
+    }
+  ],
+  "Create Store": [
+    {
+      "reqDto": {
+        "storeBusinessName": "상호명4",
+        "storeName": "매장명4",
+        "businessRegistrationNumber": "1234567894",
+        "postcode": "12344",
+        "detailedAddress": "서울시 강남구 테헤란로 4",
+        "storePhonenumber": "021234564"
+      },
+      "res": {
+        "status": 500,
+        "data": {
+          "success": false,
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "서버 내부 오류가 발생했습니다."
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "storeBusinessName": "상호명5",
+        "storeName": "매장명5",
+        "businessRegistrationNumber": "2345678905",
+        "postcode": "12345",
+        "detailedAddress": "서울시 강남구 테헤란로 5",
+        "storePhonenumber": "021234565"
+      },
+      "res": {
+        "status": 500,
+        "data": {
+          "success": false,
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "서버 내부 오류가 발생했습니다."
+          }
+        }
+      }
+    },
+    {
+      "reqDto": {
+        "storeBusinessName": "상호명6",
+        "storeName": "매장명6",
+        "businessRegistrationNumber": "3456789016",
+        "postcode": "12346",
+        "detailedAddress": "서울시 강남구 테헤란로 6",
+        "storePhonenumber": "021234566"
+      },
+      "res": {
+        "status": 500,
+        "data": {
+          "success": false,
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "서버 내부 오류가 발생했습니다."
+          }
+        }
+      }
+    }
+  ],
+  "Join Store": [],
+  "Create Contract": [],
+  "Complete Contract": [],
+  "Get CRM Customers": []
+}

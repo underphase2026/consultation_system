@@ -59,7 +59,11 @@ let AuthService = class AuthService {
             email: dto.email,
             password: dto.password,
             role: role_enum_1.Role.OWNER,
-            marketingAgreed: dto.terms.marketingAgreed ?? false,
+            terms: {
+                serviceAgreed: dto.terms.serviceAgreed,
+                privacyAgreed: dto.terms.privacyAgreed,
+                marketingAgreed: dto.terms.marketingAgreed ?? false,
+            },
         });
         return {
             userId: user.id,
@@ -75,7 +79,11 @@ let AuthService = class AuthService {
             email: dto.email,
             password: dto.password,
             role: role_enum_1.Role.STAFF,
-            marketingAgreed: dto.terms.marketingAgreed ?? false,
+            terms: {
+                serviceAgreed: dto.terms.serviceAgreed,
+                privacyAgreed: dto.terms.privacyAgreed,
+                marketingAgreed: dto.terms.marketingAgreed ?? false,
+            },
         });
         return { userId: user.id };
     }

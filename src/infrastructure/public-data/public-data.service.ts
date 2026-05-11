@@ -34,13 +34,7 @@ export class PublicDataService implements IBusinessVerifyService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            businesses: [
-              {
-                b_no: request.businessNumber,
-                p_nm: request.representativeName,
-                start_dt: request.openDate,
-              },
-            ],
+            b_no: [request.businessNumber],
           }),
         },
       );
@@ -54,13 +48,19 @@ export class PublicDataService implements IBusinessVerifyService {
       };
       const item = json?.data?.[0];
 
-      if (!item) return { valid: false, status: '조회 실패' };
+      if (!item || !item.tax_type) return { valid: false, status: '조회 실패 (응답 데이터 없음)' };
 
-      const valid =
-        item.tax_type !== '국세청에 등록되지 않은 사업자입니다.';
+      // 국세청 응답 메시지는 때에 따라 미묘하게 달라질 수 있으므로, '등록되지 않은' 이라는 키워드로 검사합니다.
+      const isUnregistered = item.tax_type.includes('등록되지 않은');
+      
+      // b_stt 값이 빈 문자열이면 tax_type을 사용하고, 둘 다 없으면 '알 수 없음' 반환
+      const statusStr = item.b_stt || item.tax_type || '알 수 없음';
+      
+      const valid = !isUnregistered && !!item.b_stt;
+
       return {
         valid,
-        status: item.b_stt ?? item.tax_type ?? '알 수 없음',
+        status: statusStr,
       };
     } catch (err) {
       this.logger.error('사업자 번호 진위 확인 API 오류', err);

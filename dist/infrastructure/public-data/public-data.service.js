@@ -32,13 +32,7 @@ let PublicDataService = PublicDataService_1 = class PublicDataService {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    businesses: [
-                        {
-                            b_no: request.businessNumber,
-                            p_nm: request.representativeName,
-                            start_dt: request.openDate,
-                        },
-                    ],
+                    b_no: [request.businessNumber],
                 }),
             });
             if (!res.ok) {
@@ -46,12 +40,14 @@ let PublicDataService = PublicDataService_1 = class PublicDataService {
             }
             const json = (await res.json());
             const item = json?.data?.[0];
-            if (!item)
-                return { valid: false, status: '조회 실패' };
-            const valid = item.tax_type !== '국세청에 등록되지 않은 사업자입니다.';
+            if (!item || !item.tax_type)
+                return { valid: false, status: '조회 실패 (응답 데이터 없음)' };
+            const isUnregistered = item.tax_type.includes('등록되지 않은');
+            const statusStr = item.b_stt || item.tax_type || '알 수 없음';
+            const valid = !isUnregistered && !!item.b_stt;
             return {
                 valid,
-                status: item.b_stt ?? item.tax_type ?? '알 수 없음',
+                status: statusStr,
             };
         }
         catch (err) {

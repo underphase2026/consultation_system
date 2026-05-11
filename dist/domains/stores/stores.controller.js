@@ -18,11 +18,13 @@ const swagger_1 = require("@nestjs/swagger");
 const stores_service_1 = require("./stores.service");
 const create_store_dto_1 = require("./dto/create-store.dto");
 const join_store_dto_1 = require("./dto/join-store.dto");
+const business_verify_dto_1 = require("./dto/business-verify.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 const role_enum_1 = require("../../common/enums/role.enum");
+const user_entity_1 = require("../users/entities/user.entity");
 const store_response_dto_1 = require("./dto/store-response.dto");
 let StoresController = class StoresController {
     storesService;
@@ -38,6 +40,9 @@ let StoresController = class StoresController {
     joinStore(user, dto) {
         return this.storesService.joinStore(user.id, dto);
     }
+    verifyBusinessNumber(dto) {
+        return this.storesService.verifyBusinessNumber(dto.businessRegistrationNumber);
+    }
 };
 exports.StoresController = StoresController;
 __decorate([
@@ -48,7 +53,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: '매장 목록 반환', type: [store_response_dto_1.StoreItemResponseDto] }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [user_entity_1.User]),
     __metadata("design:returntype", void 0)
 ], StoresController.prototype, "getMyStores", null);
 __decorate([
@@ -60,7 +65,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, create_store_dto_1.CreateStoreDto]),
+    __metadata("design:paramtypes", [user_entity_1.User, create_store_dto_1.CreateStoreDto]),
     __metadata("design:returntype", void 0)
 ], StoresController.prototype, "createStore", null);
 __decorate([
@@ -72,9 +77,20 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, join_store_dto_1.JoinStoreDto]),
+    __metadata("design:paramtypes", [user_entity_1.User, join_store_dto_1.JoinStoreDto]),
     __metadata("design:returntype", void 0)
 ], StoresController.prototype, "joinStore", null);
+__decorate([
+    (0, common_1.Post)('business-verify'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.OWNER),
+    (0, swagger_1.ApiOperation)({ summary: '사업자 번호 진위 확인 (OWNER 전용)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '유효한 사업자 번호' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [business_verify_dto_1.BusinessVerifyDto]),
+    __metadata("design:returntype", void 0)
+], StoresController.prototype, "verifyBusinessNumber", null);
 exports.StoresController = StoresController = __decorate([
     (0, swagger_1.ApiTags)('Stores'),
     (0, swagger_1.ApiBearerAuth)('access-token'),

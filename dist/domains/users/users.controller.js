@@ -19,6 +19,7 @@ const users_service_1 = require("./users.service");
 const update_user_dto_1 = require("./dto/update-user.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const user_entity_1 = require("./entities/user.entity");
 const user_response_dto_1 = require("./dto/user-response.dto");
 const auth_response_dto_1 = require("../auth/dto/auth-response.dto");
 let UsersController = class UsersController {
@@ -33,7 +34,7 @@ let UsersController = class UsersController {
             birthDate: user.birthDate ?? null,
             email: user.email ?? null,
             referralCode: user.referralCode,
-            marketingAgreed: user.marketingAgreed,
+            marketingAgreed: user.terms?.marketingAgreed ?? false,
             role: user.role,
         };
     }
@@ -42,7 +43,7 @@ let UsersController = class UsersController {
         return {
             name: updated.name,
             phoneNumber: updated.phoneNumber,
-            marketingAgreed: updated.marketingAgreed,
+            marketingAgreed: updated.terms?.marketingAgreed ?? false,
         };
     }
 };
@@ -54,7 +55,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: '내 정보 반환', type: user_response_dto_1.UserProfileResponseDto }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [user_entity_1.User]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getMe", null);
 __decorate([
@@ -65,7 +66,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, update_user_dto_1.UpdateUserDto]),
+    __metadata("design:paramtypes", [user_entity_1.User, update_user_dto_1.UpdateUserDto]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateMe", null);
 exports.UsersController = UsersController = __decorate([

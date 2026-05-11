@@ -16,12 +16,13 @@ import {
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { JoinStoreDto } from './dto/join-store.dto';
+import { BusinessVerifyDto } from './dto/business-verify.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
-import type { User } from '../users/interfaces/user.interface';
+import { User } from '../users/entities/user.entity';
 import {
   StoreItemResponseDto,
   CreateStoreResponseDto,
@@ -63,5 +64,15 @@ export class StoresController {
   @ApiResponse({ status: 200, description: '합류 완료', type: JoinStoreResponseDto })
   joinStore(@CurrentUser() user: User, @Body() dto: JoinStoreDto) {
     return this.storesService.joinStore(user.id, dto);
+  }
+
+  /** S4 — 사업자 번호 진위 확인 (OWNER 전용, 매장 생성 전 호출) */
+  @Post('business-verify')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.OWNER)
+  @ApiOperation({ summary: '사업자 번호 진위 확인 (OWNER 전용)' })
+  @ApiResponse({ status: 200, description: '유효한 사업자 번호' })
+  verifyBusinessNumber(@Body() dto: BusinessVerifyDto) {
+    return this.storesService.verifyBusinessNumber(dto.businessRegistrationNumber);
   }
 }

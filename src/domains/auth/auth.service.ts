@@ -67,7 +67,11 @@ export class AuthService {
       email: dto.email,
       password: dto.password,
       role: Role.OWNER,
-      marketingAgreed: dto.terms.marketingAgreed ?? false,
+      terms: {
+        serviceAgreed: dto.terms.serviceAgreed,
+        privacyAgreed: dto.terms.privacyAgreed,
+        marketingAgreed: dto.terms.marketingAgreed ?? false,
+      },
     });
 
     return {
@@ -89,7 +93,11 @@ export class AuthService {
       email: dto.email,
       password: dto.password,
       role: Role.STAFF,
-      marketingAgreed: dto.terms.marketingAgreed ?? false,
+      terms: {
+        serviceAgreed: dto.terms.serviceAgreed,
+        privacyAgreed: dto.terms.privacyAgreed,
+        marketingAgreed: dto.terms.marketingAgreed ?? false,
+      },
     });
 
     return { userId: user.id };

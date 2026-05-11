@@ -17,7 +17,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from './interfaces/user.interface';
+import { User } from './entities/user.entity';
 import { UserProfileResponseDto } from './dto/user-response.dto';
 import { MessageResponseDto } from '../auth/dto/auth-response.dto';
 
@@ -40,7 +40,7 @@ export class UsersController {
       birthDate: user.birthDate ?? null,
       email: user.email ?? null,
       referralCode: user.referralCode,
-      marketingAgreed: user.marketingAgreed,
+      marketingAgreed: user.terms?.marketingAgreed ?? false,
       role: user.role,
     };
   }
@@ -55,7 +55,7 @@ export class UsersController {
     return {
       name: updated.name,
       phoneNumber: updated.phoneNumber,
-      marketingAgreed: updated.marketingAgreed,
+      marketingAgreed: updated.terms?.marketingAgreed ?? false,
     };
   }
 }

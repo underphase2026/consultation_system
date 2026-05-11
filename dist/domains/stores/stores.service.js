@@ -14,51 +14,64 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoresService = void 0;
 const common_1 = require("@nestjs/common");
-const uuid_1 = require("uuid");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
+const store_entity_1 = require("./entities/store.entity");
+const store_staff_entity_1 = require("./entities/store-staff.entity");
 const users_service_1 = require("../users/users.service");
 const role_enum_1 = require("../../common/enums/role.enum");
 const business_verify_interface_1 = require("../../infrastructure/public-data/interfaces/business-verify.interface");
 let StoresService = class StoresService {
+    storeRepository;
+    storeStaffRepository;
     usersService;
     businessVerifyService;
-    store = new Map();
-    staffStoreIndex = new Map();
-    constructor(usersService, businessVerifyService) {
+    constructor(storeRepository, storeStaffRepository, usersService, businessVerifyService) {
+        this.storeRepository = storeRepository;
+        this.storeStaffRepository = storeStaffRepository;
         this.usersService = usersService;
         this.businessVerifyService = businessVerifyService;
     }
     async getMyStores(userId, role) {
         if (role === role_enum_1.Role.OWNER) {
-            const ownerStores = [...this.store.values()].filter((s) => s.ownerId === userId);
-            return this.formatStores(ownerStores, userId);
+            const stores = await this.storeRepository.find({
+                where: { ownerId: userId },
+                relations: ['owner'],
+            });
+            return stores.map((s) => ({
+                storeId: s.id,
+                storeName: s.storeName,
+                address: s.detailedAddress,
+                rate: s.rate ?? null,
+                ownerName: s.owner?.name ?? '',
+                phoneNumber: s.storePhone ?? s.owner?.phoneNumber ?? '',
+            }));
         }
-        const storeId = this.staffStoreIndex.get(userId);
-        if (!storeId)
-            return [];
-        const staffStore = this.store.get(storeId);
-        if (!staffStore)
-            return [];
-        return this.formatStores([staffStore], staffStore.ownerId);
-    }
-    async formatStores(stores, ownerId) {
-        const owner = await this.usersService.findById(ownerId);
-        return stores.map((s) => ({
-            storeId: s.id,
-            storeName: s.storeName,
-            address: s.detailedAddress,
-            rate: s.rate ?? null,
-            ownerName: owner?.name ?? '',
-            phoneNumber: s.storePhonenumber ?? owner?.phoneNumber ?? '',
-        }));
+        const staffs = await this.storeStaffRepository.find({
+            where: { userId },
+            relations: ['store', 'store.owner'],
+        });
+        return staffs.map((st) => {
+            const s = st.store;
+            return {
+                storeId: s.id,
+                storeName: s.storeName,
+                address: s.detailedAddress,
+                rate: s.rate ?? null,
+                ownerName: s.owner?.name ?? '',
+                phoneNumber: s.storePhone ?? s.owner?.phoneNumber ?? '',
+            };
+        });
     }
     async createStore(ownerId, dto) {
-        for (const s of this.store.values()) {
-            if (s.businessRegistrationNumber === dto.businessRegistrationNumber) {
-                throw new common_1.ConflictException({
-                    code: 'BUSINESS_NUMBER_ALREADY_EXISTS',
-                    message: '이미 등록된 사업자 등록번호입니다.',
-                });
-            }
+        const existing = await this.storeRepository.findOne({
+            where: { businessRegistrationNumber: dto.businessRegistrationNumber },
+        });
+        if (existing) {
+            throw new common_1.ConflictException({
+                code: 'BUSINESS_NUMBER_ALREADY_EXISTS',
+                message: '이미 등록된 사업자 등록번호입니다.',
+            });
         }
         const verifyResult = await this.businessVerifyService.verify({
             businessNumber: dto.businessRegistrationNumber,
@@ -71,58 +84,87 @@ let StoresService = class StoresService {
                 message: `사업자 번호 확인 실패: ${verifyResult.status}`,
             });
         }
-        const newStore = {
-            id: (0, uuid_1.v4)(),
+        const storeCode = await this.generateStoreCode();
+        const newStore = this.storeRepository.create({
             ownerId,
             storeBusinessName: dto.storeBusinessName,
             storeName: dto.storeName,
             businessRegistrationNumber: dto.businessRegistrationNumber,
             postcode: dto.postcode,
             detailedAddress: dto.detailedAddress,
-            storePhonenumber: dto.storePhonenumber,
-            storeCode: this.generateStoreCode(),
-            staffIds: [],
-            createdAt: new Date(),
-        };
-        this.store.set(newStore.id, newStore);
+            storePhone: dto.storePhonenumber,
+            storeCode,
+        });
+        await this.storeRepository.save(newStore);
         return {
             storeId: newStore.id,
             storeName: newStore.storeName,
             storeCode: newStore.storeCode,
         };
     }
+    async verifyBusinessNumber(businessNumber) {
+        const verifyResult = await this.businessVerifyService.verify({
+            businessNumber,
+            representativeName: '',
+            openDate: '',
+        });
+        if (!verifyResult.valid) {
+            throw new common_1.BadRequestException({
+                code: 'INVALID_BUSINESS_NUMBER',
+                message: `사업자 번호 확인 실패: ${verifyResult.status}`,
+            });
+        }
+        return {
+            valid: true,
+            status: verifyResult.status,
+        };
+    }
     async joinStore(staffId, dto) {
-        if (this.staffStoreIndex.has(staffId)) {
+        const existing = await this.storeStaffRepository.findOne({
+            where: { userId: staffId },
+        });
+        if (existing) {
             throw new common_1.ConflictException({
                 code: 'ALREADY_JOINED',
                 message: '이미 매장에 소속되어 있습니다.',
             });
         }
-        const target = [...this.store.values()].find((s) => s.storeCode === dto.storeCode);
+        const target = await this.storeRepository.findOne({
+            where: { storeCode: dto.storeCode },
+        });
         if (!target) {
             throw new common_1.NotFoundException({
                 code: 'STORE_NOT_FOUND',
                 message: '유효하지 않은 매장 코드입니다.',
             });
         }
-        target.staffIds.push(staffId);
-        this.store.set(target.id, target);
-        this.staffStoreIndex.set(staffId, target.id);
+        const storeStaff = this.storeStaffRepository.create({
+            userId: staffId,
+            storeId: target.id,
+        });
+        await this.storeStaffRepository.save(storeStaff);
         return { storeId: target.id, storeName: target.storeName };
     }
-    generateStoreCode() {
+    async generateStoreCode() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code;
-        do {
+        let code = '';
+        let isUsed = true;
+        while (isUsed) {
             code = Array.from({ length: 8 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
-        } while ([...this.store.values()].some((s) => s.storeCode === code));
+            const count = await this.storeRepository.count({ where: { storeCode: code } });
+            isUsed = count > 0;
+        }
         return code;
     }
 };
 exports.StoresService = StoresService;
 exports.StoresService = StoresService = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)(business_verify_interface_1.BUSINESS_VERIFY_SERVICE)),
-    __metadata("design:paramtypes", [users_service_1.UsersService, Object])
+    __param(0, (0, typeorm_1.InjectRepository)(store_entity_1.Store)),
+    __param(1, (0, typeorm_1.InjectRepository)(store_staff_entity_1.StoreStaff)),
+    __param(3, (0, common_1.Inject)(business_verify_interface_1.BUSINESS_VERIFY_SERVICE)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        users_service_1.UsersService, Object])
 ], StoresService);
 //# sourceMappingURL=stores.service.js.map

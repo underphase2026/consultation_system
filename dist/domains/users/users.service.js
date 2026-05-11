@@ -38,37 +38,49 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
-const uuid_1 = require("uuid");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcryptjs"));
+const user_entity_1 = require("./entities/user.entity");
 let UsersService = class UsersService {
-    store = new Map();
-    generateReferralCode() {
+    userRepository;
+    constructor(userRepository) {
+        this.userRepository = userRepository;
+    }
+    async generateReferralCode() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        let code;
-        do {
+        let code = '';
+        let isUsed = true;
+        while (isUsed) {
             code = Array.from({ length: 6 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
-        } while (this.isReferralCodeUsed(code));
+            isUsed = await this.isReferralCodeUsed(code);
+        }
         return code;
     }
-    isReferralCodeUsed(code) {
-        for (const user of this.store.values()) {
-            if (user.referralCode === code)
-                return true;
-        }
-        return false;
+    async isReferralCodeUsed(code) {
+        const count = await this.userRepository.count({ where: { referralCode: code } });
+        return count > 0;
     }
     async findByPhoneNumber(phoneNumber) {
-        for (const user of this.store.values()) {
-            if (user.phoneNumber === phoneNumber)
-                return user;
-        }
-        return undefined;
+        return this.userRepository.findOne({
+            where: { phoneNumber },
+            relations: ['terms'],
+        });
     }
     async findById(id) {
-        return this.store.get(id);
+        return this.userRepository.findOne({
+            where: { id },
+            relations: ['terms'],
+        });
     }
     async create(data) {
         const existing = await this.findByPhoneNumber(data.phoneNumber);
@@ -78,22 +90,25 @@ let UsersService = class UsersService {
                 message: '이미 가입된 휴대폰 번호입니다.',
             });
         }
-        const user = {
-            id: (0, uuid_1.v4)(),
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        const referralCode = await this.generateReferralCode();
+        const user = this.userRepository.create({
             name: data.name,
             phoneNumber: data.phoneNumber,
             email: data.email,
-            password: await bcrypt.hash(data.password, 10),
+            password: hashedPassword,
             role: data.role,
-            referralCode: this.generateReferralCode(),
-            marketingAgreed: data.marketingAgreed,
-            createdAt: new Date(),
-        };
-        this.store.set(user.id, user);
-        return user;
+            referralCode,
+            terms: {
+                serviceAgreed: data.terms.serviceAgreed,
+                privacyAgreed: data.terms.privacyAgreed,
+                marketingAgreed: data.terms.marketingAgreed,
+            },
+        });
+        return this.userRepository.save(user);
     }
     async update(id, dto) {
-        const user = this.store.get(id);
+        const user = await this.findById(id);
         if (!user) {
             throw new common_1.NotFoundException({
                 code: 'USER_NOT_FOUND',
@@ -108,18 +123,17 @@ let UsersService = class UsersService {
                     message: '이미 사용 중인 휴대폰 번호입니다.',
                 });
             }
+            user.phoneNumber = dto.phoneNumber;
         }
-        const updated = {
-            ...user,
-            name: dto.name ?? user.name,
-            phoneNumber: dto.phoneNumber ?? user.phoneNumber,
-            password: dto.password
-                ? await bcrypt.hash(dto.password, 10)
-                : user.password,
-            marketingAgreed: dto.marketingAgreed ?? user.marketingAgreed,
-        };
-        this.store.set(id, updated);
-        return updated;
+        if (dto.name)
+            user.name = dto.name;
+        if (dto.password) {
+            user.password = await bcrypt.hash(dto.password, 10);
+        }
+        if (dto.marketingAgreed !== undefined && user.terms) {
+            user.terms.marketingAgreed = dto.marketingAgreed;
+        }
+        return this.userRepository.save(user);
     }
     async updatePasswordByPhone(phoneNumber, newPassword) {
         const user = await this.findByPhoneNumber(phoneNumber);
@@ -130,7 +144,7 @@ let UsersService = class UsersService {
             });
         }
         user.password = await bcrypt.hash(newPassword, 10);
-        this.store.set(user.id, user);
+        await this.userRepository.save(user);
     }
     async validatePassword(user, plain) {
         return bcrypt.compare(plain, user.password);
@@ -138,6 +152,8 @@ let UsersService = class UsersService {
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map
