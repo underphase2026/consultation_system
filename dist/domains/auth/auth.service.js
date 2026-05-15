@@ -50,9 +50,9 @@ let AuthService = class AuthService {
             userId: user.id,
         };
     }
-    async registerOwner(dto) {
+    async registerOwner(dto, phoneVerifyToken) {
         this.validateTerms(dto.terms);
-        this.validatePhoneAuth(dto.isPhoneAuth);
+        await this.validatePhoneVerifyToken(phoneVerifyToken, dto.phoneNumber);
         const user = await this.usersService.create({
             name: dto.name,
             phoneNumber: dto.phoneNumber,
@@ -70,9 +70,9 @@ let AuthService = class AuthService {
             referralCode: user.referralCode,
         };
     }
-    async registerStaff(dto) {
+    async registerStaff(dto, phoneVerifyToken) {
         this.validateTerms(dto.terms);
-        this.validatePhoneAuth(dto.isPhoneAuth);
+        await this.validatePhoneVerifyToken(phoneVerifyToken, dto.phoneNumber);
         const user = await this.usersService.create({
             name: dto.name,
             phoneNumber: dto.phoneNumber,
@@ -106,11 +106,22 @@ let AuthService = class AuthService {
         await this.usersService.updatePasswordByPhone(phoneNumber, dto.newPassword);
         return { message: '비밀번호가 변경되었습니다.' };
     }
-    validatePhoneAuth(isPhoneAuth) {
-        if (!isPhoneAuth) {
+    generateSixDigitCode() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    async validatePhoneVerifyToken(token, phoneNumber) {
+        try {
+            const payload = this.jwtService.verify(token, {
+                secret: this.configService.get('JWT_PHONE_VERIFY_SECRET', 'phone-verify-fallback'),
+            });
+            if (payload.type !== 'phone-verify' || payload.sub !== phoneNumber) {
+                throw new Error('Mismatch');
+            }
+        }
+        catch {
             throw new common_1.BadRequestException({
                 code: 'PHONE_AUTH_REQUIRED',
-                message: '휴대폰 인증이 완료되지 않았습니다.',
+                message: '유효한 휴대폰 인증 토큰이 필요합니다. SMS 인증을 먼저 완료해 주세요.',
             });
         }
     }

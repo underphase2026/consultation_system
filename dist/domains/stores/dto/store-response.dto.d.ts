@@ -15,3 +15,10 @@ export declare class JoinStoreResponseDto {
     storeId: string;
     storeName: string;
 }
+export declare class GeocodeResponseDto {
+    addressName: string;
+    roadAddress: string | null;
+    jibunAddress: string | null;
+    lat: number;
+    lng: number;
+}

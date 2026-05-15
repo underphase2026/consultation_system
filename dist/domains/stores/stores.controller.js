@@ -19,6 +19,7 @@ const stores_service_1 = require("./stores.service");
 const create_store_dto_1 = require("./dto/create-store.dto");
 const join_store_dto_1 = require("./dto/join-store.dto");
 const business_verify_dto_1 = require("./dto/business-verify.dto");
+const geocode_query_dto_1 = require("./dto/geocode-query.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
@@ -42,6 +43,9 @@ let StoresController = class StoresController {
     }
     verifyBusinessNumber(dto) {
         return this.storesService.verifyBusinessNumber(dto.businessRegistrationNumber);
+    }
+    geocodeAddress(query) {
+        return this.storesService.geocodeAddress(query.address);
     }
 };
 exports.StoresController = StoresController;
@@ -91,6 +95,17 @@ __decorate([
     __metadata("design:paramtypes", [business_verify_dto_1.BusinessVerifyDto]),
     __metadata("design:returntype", void 0)
 ], StoresController.prototype, "verifyBusinessNumber", null);
+__decorate([
+    (0, common_1.Get)('geocode'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.OWNER, role_enum_1.Role.STAFF),
+    (0, swagger_1.ApiOperation)({ summary: '주소로 위경도 좌표 변환 (카카오 로컬 API 연동)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '변환된 좌표 데이터 반환', type: store_response_dto_1.GeocodeResponseDto }),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [geocode_query_dto_1.GeocodeQueryDto]),
+    __metadata("design:returntype", void 0)
+], StoresController.prototype, "geocodeAddress", null);
 exports.StoresController = StoresController = __decorate([
     (0, swagger_1.ApiTags)('Stores'),
     (0, swagger_1.ApiBearerAuth)('access-token'),

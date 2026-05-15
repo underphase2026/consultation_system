@@ -32,8 +32,20 @@ export class Store {
   @Column()
   postcode: string;
 
+  @Column({ name: 'road_address', nullable: true })
+  roadAddress: string;
+
+  @Column({ name: 'jibun_address', nullable: true })
+  jibunAddress: string;
+
   @Column({ name: 'detailed_address' })
   detailedAddress: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  lat: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  lng: number;
 
   @Column({ name: 'store_phone', nullable: true })
   storePhone: string;

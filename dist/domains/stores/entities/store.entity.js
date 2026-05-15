@@ -20,7 +20,11 @@ let Store = class Store {
     storeName;
     businessRegistrationNumber;
     postcode;
+    roadAddress;
+    jibunAddress;
     detailedAddress;
+    lat;
+    lng;
     storePhone;
     storeCode;
     rate;
@@ -56,9 +60,25 @@ __decorate([
     __metadata("design:type", String)
 ], Store.prototype, "postcode", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'road_address', nullable: true }),
+    __metadata("design:type", String)
+], Store.prototype, "roadAddress", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'jibun_address', nullable: true }),
+    __metadata("design:type", String)
+], Store.prototype, "jibunAddress", void 0);
+__decorate([
     (0, typeorm_1.Column)({ name: 'detailed_address' }),
     __metadata("design:type", String)
 ], Store.prototype, "detailedAddress", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 7, nullable: true }),
+    __metadata("design:type", Number)
+], Store.prototype, "lat", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 7, nullable: true }),
+    __metadata("design:type", Number)
+], Store.prototype, "lng", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'store_phone', nullable: true }),
     __metadata("design:type", String)

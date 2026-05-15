@@ -3,8 +3,12 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  InternalServerErrorException,
   Inject,
 } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { lastValueFrom } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Store } from './entities/store.entity';
@@ -26,6 +30,8 @@ export class StoresService {
     private readonly usersService: UsersService,
     @Inject(BUSINESS_VERIFY_SERVICE)
     private readonly businessVerifyService: IBusinessVerifyService,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -102,7 +108,11 @@ export class StoresService {
       storeName: dto.storeName,
       businessRegistrationNumber: dto.businessRegistrationNumber,
       postcode: dto.postcode,
+      roadAddress: dto.roadAddress,
+      jibunAddress: dto.jibunAddress,
       detailedAddress: dto.detailedAddress,
+      lat: dto.lat,
+      lng: dto.lng,
       storePhone: dto.storePhonenumber, // DTO 이름과 Entity 필드명이 다름에 주의 (storePhonenumber -> storePhone)
       storeCode,
     });
@@ -137,6 +147,45 @@ export class StoresService {
       valid: true,
       status: verifyResult.status,
     };
+  }
+
+  // ─────────────────────────────────────────────
+  // S2-2. 카카오 로컬 API를 통한 주소 검색 및 좌표 변환
+  // ─────────────────────────────────────────────
+  async geocodeAddress(address: string) {
+    const kakaoApiKey = this.configService.get<string>('KAKAO_REST_API_KEY');
+    if (!kakaoApiKey) {
+      throw new InternalServerErrorException('카카오 API 키가 설정되지 않았습니다.');
+    }
+
+    try {
+      const url = `https://dapi.kakao.com/v2/local/search/address.json`;
+      const response = await lastValueFrom(
+        this.httpService.get(url, {
+          params: { query: address },
+          headers: {
+            Authorization: `KakaoAK ${kakaoApiKey}`,
+          },
+        })
+      );
+
+      const data = response.data;
+      if (!data || !data.documents || data.documents.length === 0) {
+        throw new NotFoundException('검색된 주소 결과가 없습니다.');
+      }
+
+      const firstResult = data.documents[0];
+      return {
+        addressName: firstResult.address_name,
+        roadAddress: firstResult.road_address?.address_name || null,
+        jibunAddress: firstResult.address?.address_name || null,
+        lat: parseFloat(firstResult.y),
+        lng: parseFloat(firstResult.x),
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('주소 변환 중 서버 오류가 발생했습니다.');
+    }
   }
 
   // ─────────────────────────────────────────────

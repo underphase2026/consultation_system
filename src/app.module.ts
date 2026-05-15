@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,7 +21,15 @@ import { DatabaseModule } from './infrastructure/database/database.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    
+
+    // 어뷰징 방지 전역 설정 (기본: 분당 60회)
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,  // 1분 (ms)
+        limit: 60,   // 기본 60회 (각 엔드포인트에서 @Throttle()로 오버라이드 가능)
+      },
+    ]),
+
     // 이벤트 에미터 (도메인 간 통신용)
     EventEmitterModule.forRoot(),
 

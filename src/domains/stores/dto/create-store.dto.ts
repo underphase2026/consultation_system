@@ -5,6 +5,8 @@ import {
   IsString,
   Length,
   Matches,
+  IsNumber,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class CreateStoreDto {
@@ -25,9 +27,29 @@ export class CreateStoreDto {
   @IsString()
   postcode: string;
 
-  @ApiProperty({ example: '서울 강남구 테헤란로 123, 2층', description: '상세 주소' })
+  @ApiPropertyOptional({ example: '서울 강남구 테헤란로 123', description: '도로명 주소' })
+  @IsOptional()
+  @IsString()
+  roadAddress?: string;
+
+  @ApiPropertyOptional({ example: '서울 강남구 역삼동 123', description: '지번 주소' })
+  @IsOptional()
+  @IsString()
+  jibunAddress?: string;
+
+  @ApiProperty({ example: '2층 201호', description: '상세 주소' })
   @IsString()
   detailedAddress: string;
+
+  @ApiProperty({ example: 37.5005, description: '위도 (Latitude)' })
+  @IsNotEmpty()
+  @IsNumber()
+  lat: number;
+
+  @ApiProperty({ example: 127.0364, description: '경도 (Longitude)' })
+  @IsNotEmpty()
+  @IsNumber()
+  lng: number;
 
   @ApiPropertyOptional({ example: '0212345678', description: '매장 전화번호 (선택)' })
   @IsOptional()

@@ -7,11 +7,14 @@ import { PublicDataModule } from '../../infrastructure/public-data/public-data.m
 import { Store } from './entities/store.entity';
 import { StoreStaff } from './entities/store-staff.entity';
 
+import { HttpModule } from '@nestjs/axios';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Store, StoreStaff]),
     UsersModule,
     PublicDataModule,
+    HttpModule,
   ],
   controllers: [StoresController],
   providers: [StoresService],

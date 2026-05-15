@@ -17,7 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         autoLoadEntities: true,
         // TODO: 운영 환경에서는 반드시 synchronize를 false로 설정하고 Migration을 사용해야 합니다.
         synchronize: config.get<string>('NODE_ENV') !== 'production',
-        logging: config.get<string>('NODE_ENV') === 'development',
+        logging: false, // 터미널에 불필요한 쿼리문이 출력되지 않도록 비활성화
       }),
     }),
   ],

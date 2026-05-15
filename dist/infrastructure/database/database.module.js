@@ -28,7 +28,7 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     database: config.get('DB_DATABASE', 'underphase'),
                     autoLoadEntities: true,
                     synchronize: config.get('NODE_ENV') !== 'production',
-                    logging: config.get('NODE_ENV') === 'development',
+                    logging: false,
                 }),
             }),
         ],

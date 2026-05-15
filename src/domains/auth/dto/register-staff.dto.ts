@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsEmail,
   IsOptional,
   IsString,
@@ -20,10 +19,6 @@ export class RegisterStaffDto {
   @IsString()
   @Matches(/^01[0-9]{8,9}$/, { message: '올바른 휴대폰 번호 형식이 아닙니다.' })
   phoneNumber: string;
-
-  @ApiProperty({ description: '휴대폰 인증 완료 여부 (true여야 가입 가능)' })
-  @IsBoolean()
-  isPhoneAuth: boolean;
 
   @ApiPropertyOptional({ example: 'staff@example.com', description: '이메일 (선택)' })
   @IsOptional()

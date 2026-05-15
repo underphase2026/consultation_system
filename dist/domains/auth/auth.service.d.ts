@@ -16,11 +16,11 @@ export declare class AuthService {
         role: Role;
         userId: string;
     }>;
-    registerOwner(dto: RegisterOwnerDto): Promise<{
+    registerOwner(dto: RegisterOwnerDto, phoneVerifyToken: string): Promise<{
         userId: string;
         referralCode: string;
     }>;
-    registerStaff(dto: RegisterStaffDto): Promise<{
+    registerStaff(dto: RegisterStaffDto, phoneVerifyToken: string): Promise<{
         userId: string;
     }>;
     issueResetToken(phoneNumber: string): Promise<{
@@ -29,6 +29,7 @@ export declare class AuthService {
     forgotPassword(phoneNumber: string, dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;
-    private validatePhoneAuth;
+    private generateSixDigitCode;
+    private validatePhoneVerifyToken;
     private validateTerms;
 }

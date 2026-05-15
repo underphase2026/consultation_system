@@ -31,11 +31,22 @@ let AuthController = class AuthController {
     async login(dto) {
         return this.authService.login(dto);
     }
-    async registerOwner(dto) {
-        return this.authService.registerOwner(dto);
+    async registerOwner(authHeader, dto) {
+        const token = this.extractBearerToken(authHeader);
+        return this.authService.registerOwner(dto, token);
     }
-    async registerStaff(dto) {
-        return this.authService.registerStaff(dto);
+    async registerStaff(authHeader, dto) {
+        const token = this.extractBearerToken(authHeader);
+        return this.authService.registerStaff(dto, token);
+    }
+    extractBearerToken(authHeader) {
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            throw new common_1.BadRequestException({
+                code: 'PHONE_AUTH_REQUIRED',
+                message: 'Authorization 헤더에 SMS 인증 토큰이 필요합니다. (Bearer <phoneVerifyToken>)',
+            });
+        }
+        return authHeader.replace('Bearer ', '').trim();
     }
     issueResetToken(phoneNumber) {
         return this.authService.issueResetToken(phoneNumber);
@@ -58,28 +69,36 @@ __decorate([
 __decorate([
     (0, common_1.Post)('register/owner'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    (0, swagger_1.ApiOperation)({ summary: '대표 회원가입' }),
+    (0, swagger_1.ApiOperation)({
+        summary: '대표 회원가입 (Authorization: Bearer <phoneVerifyToken> 필요)',
+        description: 'SMS 인증 후 발급된 phoneVerifyToken을 Authorization 헤더에 Bearer 토큰으로 담아 호출하세요.',
+    }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'userId & referralCode 반환', type: auth_response_dto_1.RegisterResponseDto }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Headers)('authorization')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_owner_dto_1.RegisterOwnerDto]),
+    __metadata("design:paramtypes", [String, register_owner_dto_1.RegisterOwnerDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "registerOwner", null);
 __decorate([
     (0, common_1.Post)('register/staff'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    (0, swagger_1.ApiOperation)({ summary: '직원 회원가입' }),
+    (0, swagger_1.ApiOperation)({
+        summary: '직원 회원가입 (Authorization: Bearer <phoneVerifyToken> 필요)',
+        description: 'SMS 인증 후 발급된 phoneVerifyToken을 Authorization 헤더에 Bearer 토큰으로 담아 호출하세요.',
+    }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'userId 반환', type: auth_response_dto_1.RegisterResponseDto }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Headers)('authorization')),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_staff_dto_1.RegisterStaffDto]),
+    __metadata("design:paramtypes", [String, register_staff_dto_1.RegisterStaffDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "registerStaff", null);
 __decorate([
     (0, common_1.Post)('reset-token'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
-        summary: '비밀번호 재설정 토큰 발급 (휴대폰 인증 완료 후 호출)',
+        summary: '비밀번호 재설정 토큰 발급 (SMS 인증 완료 후 호출)',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '10분 유효한 resetToken 반환', type: auth_response_dto_1.ResetTokenResponseDto }),
     __param(0, (0, common_1.Body)('phoneNumber')),
@@ -94,7 +113,6 @@ __decorate([
     (0, swagger_1.ApiBearerAuth)('reset-token'),
     (0, swagger_1.ApiOperation)({
         summary: '비밀번호 변경 (reset-token 필요)',
-        description: '휴대폰 인증 후 발급된 resetToken을 Authorization 헤더에 담아 호출. Body에는 새 비밀번호만 전달.',
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: '비밀번호 변경 완료' }),
     __param(0, ResetUser()),

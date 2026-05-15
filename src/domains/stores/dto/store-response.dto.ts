@@ -38,3 +38,20 @@ export class JoinStoreResponseDto {
   @ApiProperty({ example: '홍길동 강남점' })
   storeName: string;
 }
+
+export class GeocodeResponseDto {
+  @ApiProperty({ example: '서울 강남구 테헤란로 123' })
+  addressName: string;
+
+  @ApiProperty({ example: '서울 강남구 테헤란로 123', required: false })
+  roadAddress: string | null;
+
+  @ApiProperty({ example: '서울 강남구 역삼동 823', required: false })
+  jibunAddress: string | null;
+
+  @ApiProperty({ example: 37.5005 })
+  lat: number;
+
+  @ApiProperty({ example: 127.0364 })
+  lng: number;
+}

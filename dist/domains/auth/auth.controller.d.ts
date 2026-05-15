@@ -11,13 +11,14 @@ export declare class AuthController {
         role: import("../../common/enums/role.enum").Role;
         userId: string;
     }>;
-    registerOwner(dto: RegisterOwnerDto): Promise<{
+    registerOwner(authHeader: string, dto: RegisterOwnerDto): Promise<{
         userId: string;
         referralCode: string;
     }>;
-    registerStaff(dto: RegisterStaffDto): Promise<{
+    registerStaff(authHeader: string, dto: RegisterStaffDto): Promise<{
         userId: string;
     }>;
+    private extractBearerToken;
     issueResetToken(phoneNumber: string): Promise<{
         resetToken: string;
     }>;

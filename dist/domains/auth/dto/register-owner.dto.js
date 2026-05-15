@@ -17,7 +17,6 @@ const terms_dto_1 = require("./terms.dto");
 class RegisterOwnerDto {
     name;
     phoneNumber;
-    isPhoneAuth;
     email;
     password;
     terms;
@@ -34,11 +33,6 @@ __decorate([
     (0, class_validator_1.Matches)(/^01[0-9]{8,9}$/, { message: '올바른 휴대폰 번호 형식이 아닙니다.' }),
     __metadata("design:type", String)
 ], RegisterOwnerDto.prototype, "phoneNumber", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: '휴대폰 인증 완료 여부 (true여야 가입 가능)' }),
-    (0, class_validator_1.IsBoolean)(),
-    __metadata("design:type", Boolean)
-], RegisterOwnerDto.prototype, "isPhoneAuth", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 'owner@example.com', description: '이메일 (선택)' }),
     (0, class_validator_1.IsOptional)(),

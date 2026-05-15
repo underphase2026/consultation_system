@@ -15,6 +15,7 @@ const users_module_1 = require("../users/users.module");
 const public_data_module_1 = require("../../infrastructure/public-data/public-data.module");
 const store_entity_1 = require("./entities/store.entity");
 const store_staff_entity_1 = require("./entities/store-staff.entity");
+const axios_1 = require("@nestjs/axios");
 let StoresModule = class StoresModule {
 };
 exports.StoresModule = StoresModule;
@@ -24,6 +25,7 @@ exports.StoresModule = StoresModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([store_entity_1.Store, store_staff_entity_1.StoreStaff]),
             users_module_1.UsersModule,
             public_data_module_1.PublicDataModule,
+            axios_1.HttpModule,
         ],
         controllers: [stores_controller_1.StoresController],
         providers: [stores_service_1.StoresService],

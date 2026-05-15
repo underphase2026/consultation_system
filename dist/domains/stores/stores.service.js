@@ -14,6 +14,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoresService = void 0;
 const common_1 = require("@nestjs/common");
+const axios_1 = require("@nestjs/axios");
+const config_1 = require("@nestjs/config");
+const rxjs_1 = require("rxjs");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const store_entity_1 = require("./entities/store.entity");
@@ -26,11 +29,15 @@ let StoresService = class StoresService {
     storeStaffRepository;
     usersService;
     businessVerifyService;
-    constructor(storeRepository, storeStaffRepository, usersService, businessVerifyService) {
+    httpService;
+    configService;
+    constructor(storeRepository, storeStaffRepository, usersService, businessVerifyService, httpService, configService) {
         this.storeRepository = storeRepository;
         this.storeStaffRepository = storeStaffRepository;
         this.usersService = usersService;
         this.businessVerifyService = businessVerifyService;
+        this.httpService = httpService;
+        this.configService = configService;
     }
     async getMyStores(userId, role) {
         if (role === role_enum_1.Role.OWNER) {
@@ -91,7 +98,11 @@ let StoresService = class StoresService {
             storeName: dto.storeName,
             businessRegistrationNumber: dto.businessRegistrationNumber,
             postcode: dto.postcode,
+            roadAddress: dto.roadAddress,
+            jibunAddress: dto.jibunAddress,
             detailedAddress: dto.detailedAddress,
+            lat: dto.lat,
+            lng: dto.lng,
             storePhone: dto.storePhonenumber,
             storeCode,
         });
@@ -118,6 +129,38 @@ let StoresService = class StoresService {
             valid: true,
             status: verifyResult.status,
         };
+    }
+    async geocodeAddress(address) {
+        const kakaoApiKey = this.configService.get('KAKAO_REST_API_KEY');
+        if (!kakaoApiKey) {
+            throw new common_1.InternalServerErrorException('카카오 API 키가 설정되지 않았습니다.');
+        }
+        try {
+            const url = `https://dapi.kakao.com/v2/local/search/address.json`;
+            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.get(url, {
+                params: { query: address },
+                headers: {
+                    Authorization: `KakaoAK ${kakaoApiKey}`,
+                },
+            }));
+            const data = response.data;
+            if (!data || !data.documents || data.documents.length === 0) {
+                throw new common_1.NotFoundException('검색된 주소 결과가 없습니다.');
+            }
+            const firstResult = data.documents[0];
+            return {
+                addressName: firstResult.address_name,
+                roadAddress: firstResult.road_address?.address_name || null,
+                jibunAddress: firstResult.address?.address_name || null,
+                lat: parseFloat(firstResult.y),
+                lng: parseFloat(firstResult.x),
+            };
+        }
+        catch (error) {
+            if (error instanceof common_1.NotFoundException)
+                throw error;
+            throw new common_1.InternalServerErrorException('주소 변환 중 서버 오류가 발생했습니다.');
+        }
     }
     async joinStore(staffId, dto) {
         const existing = await this.storeStaffRepository.findOne({
@@ -165,6 +208,7 @@ exports.StoresService = StoresService = __decorate([
     __param(3, (0, common_1.Inject)(business_verify_interface_1.BUSINESS_VERIFY_SERVICE)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        users_service_1.UsersService, Object])
+        users_service_1.UsersService, Object, axios_1.HttpService,
+        config_1.ConfigService])
 ], StoresService);
 //# sourceMappingURL=stores.service.js.map

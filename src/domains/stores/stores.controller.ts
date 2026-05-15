@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,6 +18,7 @@ import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { JoinStoreDto } from './dto/join-store.dto';
 import { BusinessVerifyDto } from './dto/business-verify.dto';
+import { GeocodeQueryDto } from './dto/geocode-query.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -27,6 +29,7 @@ import {
   StoreItemResponseDto,
   CreateStoreResponseDto,
   JoinStoreResponseDto,
+  GeocodeResponseDto,
 } from './dto/store-response.dto';
 
 @ApiTags('Stores')
@@ -74,5 +77,15 @@ export class StoresController {
   @ApiResponse({ status: 200, description: '유효한 사업자 번호' })
   verifyBusinessNumber(@Body() dto: BusinessVerifyDto) {
     return this.storesService.verifyBusinessNumber(dto.businessRegistrationNumber);
+  }
+
+  /** S5 — 주소 좌표 변환 (Geocoding) */
+  @Get('geocode')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.OWNER, Role.STAFF)
+  @ApiOperation({ summary: '주소로 위경도 좌표 변환 (카카오 로컬 API 연동)' })
+  @ApiResponse({ status: 200, description: '변환된 좌표 데이터 반환', type: GeocodeResponseDto })
+  geocodeAddress(@Query() query: GeocodeQueryDto) {
+    return this.storesService.geocodeAddress(query.address);
   }
 }

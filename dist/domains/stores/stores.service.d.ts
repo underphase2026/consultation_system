@@ -1,3 +1,5 @@
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { Store } from './entities/store.entity';
 import { StoreStaff } from './entities/store-staff.entity';
@@ -11,7 +13,9 @@ export declare class StoresService {
     private readonly storeStaffRepository;
     private readonly usersService;
     private readonly businessVerifyService;
-    constructor(storeRepository: Repository<Store>, storeStaffRepository: Repository<StoreStaff>, usersService: UsersService, businessVerifyService: IBusinessVerifyService);
+    private readonly httpService;
+    private readonly configService;
+    constructor(storeRepository: Repository<Store>, storeStaffRepository: Repository<StoreStaff>, usersService: UsersService, businessVerifyService: IBusinessVerifyService, httpService: HttpService, configService: ConfigService);
     getMyStores(userId: string, role: Role): Promise<{
         storeId: string;
         storeName: string;
@@ -28,6 +32,13 @@ export declare class StoresService {
     verifyBusinessNumber(businessNumber: string): Promise<{
         valid: boolean;
         status: string;
+    }>;
+    geocodeAddress(address: string): Promise<{
+        addressName: any;
+        roadAddress: any;
+        jibunAddress: any;
+        lat: number;
+        lng: number;
     }>;
     joinStore(staffId: string, dto: JoinStoreDto): Promise<{
         storeId: string;

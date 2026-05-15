@@ -7,7 +7,11 @@ export declare class Store {
     storeName: string;
     businessRegistrationNumber: string;
     postcode: string;
+    roadAddress: string;
+    jibunAddress: string;
     detailedAddress: string;
+    lat: number;
+    lng: number;
     storePhone: string;
     storeCode: string;
     rate: string;

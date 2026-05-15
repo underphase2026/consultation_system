@@ -17,7 +17,11 @@ class CreateStoreDto {
     storeName;
     businessRegistrationNumber;
     postcode;
+    roadAddress;
+    jibunAddress;
     detailedAddress;
+    lat;
+    lng;
     storePhonenumber;
 }
 exports.CreateStoreDto = CreateStoreDto;
@@ -43,10 +47,34 @@ __decorate([
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "postcode", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: '서울 강남구 테헤란로 123, 2층', description: '상세 주소' }),
+    (0, swagger_1.ApiPropertyOptional)({ example: '서울 강남구 테헤란로 123', description: '도로명 주소' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateStoreDto.prototype, "roadAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '서울 강남구 역삼동 123', description: '지번 주소' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateStoreDto.prototype, "jibunAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2층 201호', description: '상세 주소' }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateStoreDto.prototype, "detailedAddress", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 37.5005, description: '위도 (Latitude)' }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateStoreDto.prototype, "lat", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 127.0364, description: '경도 (Longitude)' }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateStoreDto.prototype, "lng", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '0212345678', description: '매장 전화번호 (선택)' }),
     (0, class_validator_1.IsOptional)(),
