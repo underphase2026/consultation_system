@@ -25,6 +25,8 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
+    const fs = await import('fs');
+    fs.writeFileSync('swagger-spec.json', JSON.stringify(document, null, 2));
     const port = process.env.PORT ?? 3000;
     await app.listen(port);
     console.log(`🚀 Application is running on: http://localhost:${port}/api`);

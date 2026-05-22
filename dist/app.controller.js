@@ -8,9 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const app_service_1 = require("./app.service");
 let AppController = class AppController {
     appService;
@@ -20,6 +24,9 @@ let AppController = class AppController {
     getHello() {
         return this.appService.getHello();
     }
+    searchAttendance(id, date) {
+        return { id, date, results: [] };
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -28,6 +35,20 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
 ], AppController.prototype, "getHello", null);
+__decorate([
+    (0, swagger_1.ApiTags)('Search'),
+    (0, common_1.Get)('search'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: '출결 검색 (관리자 전용)', description: 'ID와 Date를 사용하여 유저의 출결 정보를 검색합니다.' }),
+    (0, swagger_1.ApiQuery)({ name: 'id', required: true, description: '유저 ID' }),
+    (0, swagger_1.ApiQuery)({ name: 'date', required: true, description: '검색할 날짜 (YYYY-MM-DD)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '검색 결과 반환' }),
+    __param(0, (0, common_1.Query)('id')),
+    __param(1, (0, common_1.Query)('date')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AppController.prototype, "searchAttendance", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [app_service_1.AppService])

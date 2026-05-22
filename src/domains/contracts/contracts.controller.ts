@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Param, Patch, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiExcludeController } from '@nestjs/swagger';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto, ContractResponseDto } from './dto/contract.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -9,6 +9,7 @@ import { User } from '../users/entities/user.entity';
 
 @ApiTags('Contracts')
 @ApiBearerAuth('access-token')
+@ApiExcludeController()
 @Controller('contracts')
 export class ContractsController {
   constructor(private readonly contractsService: ContractsService) {}

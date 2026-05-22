@@ -22,10 +22,18 @@ const current_user_decorator_1 = require("../../common/decorators/current-user.d
 const user_entity_1 = require("./entities/user.entity");
 const user_response_dto_1 = require("./dto/user-response.dto");
 const auth_response_dto_1 = require("../auth/dto/auth-response.dto");
+const role_enum_1 = require("../../common/enums/role.enum");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
+    }
+    async getAllUsers() {
+        return [];
+    }
+    async getUserById(userId) {
+        return { id: userId };
     }
     async getMe(user) {
         return {
@@ -48,6 +56,28 @@ let UsersController = class UsersController {
     }
 };
 exports.UsersController = UsersController;
+__decorate([
+    (0, common_1.Get)(),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.OWNER),
+    (0, swagger_1.ApiOperation)({ summary: '모든 유저 목록 (관리자 전용)', description: '모든 유저 목록을 조회합니다.' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '모든 유저 목록 반환' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Get)(':user_id'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, roles_decorator_1.Roles)(role_enum_1.Role.OWNER),
+    (0, swagger_1.ApiOperation)({ summary: '유저 조회 (관리자 전용)', description: 'ID를 사용하여 학생/유저를 조회합니다.' }),
+    (0, swagger_1.ApiParam)({ name: 'user_id', description: '조회할 유저의 ID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '유저 정보 반환' }),
+    __param(0, (0, common_1.Param)('user_id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getUserById", null);
 __decorate([
     (0, common_1.Get)('me'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

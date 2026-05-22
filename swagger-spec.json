@@ -1,0 +1,976 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/search": {
+      "get": {
+        "description": "ID와 Date를 사용하여 유저의 출결 정보를 검색합니다.",
+        "operationId": "AppController_searchAttendance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "query",
+            "description": "유저 ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "검색할 날짜 (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "검색 결과 반환"
+          }
+        },
+        "summary": "출결 검색 (관리자 전용)",
+        "tags": [
+          "App",
+          "Search"
+        ]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "description": "모든 유저 목록을 조회합니다.",
+        "operationId": "UsersController_getAllUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "모든 유저 목록 반환"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "모든 유저 목록 (관리자 전용)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{user_id}": {
+      "get": {
+        "description": "ID를 사용하여 학생/유저를 조회합니다.",
+        "operationId": "UsersController_getUserById",
+        "parameters": [
+          {
+            "name": "user_id",
+            "required": true,
+            "in": "path",
+            "description": "조회할 유저의 ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "유저 정보 반환"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "유저 조회 (관리자 전용)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "operationId": "UsersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "내 정보 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "내 정보 조회",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "수정 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "내 정보 수정 (이름, 이메일, 생년월일만)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JWT 액세스 토큰 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "로그인 (휴대폰 번호 + 비밀번호)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/register/owner": {
+      "post": {
+        "description": "SMS 인증 후 발급된 phoneVerifyToken을 Authorization 헤더에 Bearer 토큰으로 담아 호출하세요.",
+        "operationId": "AuthController_registerOwner",
+        "parameters": [
+          {
+            "name": "authorization",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterOwnerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "userId & referralCode 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "대표 회원가입 (Authorization: Bearer <phoneVerifyToken> 필요)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/register/staff": {
+      "post": {
+        "description": "SMS 인증 후 발급된 phoneVerifyToken을 Authorization 헤더에 Bearer 토큰으로 담아 호출하세요.",
+        "operationId": "AuthController_registerStaff",
+        "parameters": [
+          {
+            "name": "authorization",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterStaffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "userId 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "직원 회원가입 (Authorization: Bearer <phoneVerifyToken> 필요)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/reset-token": {
+      "post": {
+        "operationId": "AuthController_issueResetToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "10분 유효한 resetToken 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetTokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "비밀번호 재설정 토큰 발급 (SMS 인증 완료 후 호출)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "비밀번호 변경 완료"
+          }
+        },
+        "security": [
+          {
+            "reset-token": []
+          }
+        ],
+        "summary": "비밀번호 변경 (reset-token 필요)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/stores/mine": {
+      "get": {
+        "operationId": "StoresController_getMyStores",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "매장 목록 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoreItemResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "내 매장 조회",
+        "tags": [
+          "Stores"
+        ]
+      }
+    },
+    "/api/stores": {
+      "post": {
+        "operationId": "StoresController_createStore",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoreDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "매장 생성 완료, storeCode 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateStoreResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "매장 등록 (OWNER 전용)",
+        "tags": [
+          "Stores"
+        ]
+      }
+    },
+    "/api/stores/join": {
+      "post": {
+        "operationId": "StoresController_joinStore",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinStoreDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "합류 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinStoreResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "매장 합류 (STAFF 전용, storeCode 입력)",
+        "tags": [
+          "Stores"
+        ]
+      }
+    },
+    "/api/stores/business-verify": {
+      "post": {
+        "operationId": "StoresController_verifyBusinessNumber",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "유효한 사업자 번호"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "사업자 번호 진위 확인 (OWNER 전용)",
+        "tags": [
+          "Stores"
+        ]
+      }
+    },
+    "/api/stores/geocode": {
+      "get": {
+        "operationId": "StoresController_geocodeAddress",
+        "parameters": [
+          {
+            "name": "address",
+            "required": true,
+            "in": "query",
+            "description": "검색할 주소",
+            "schema": {
+              "example": "서울 강남구 테헤란로 123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "변환된 좌표 데이터 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeocodeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "주소로 위경도 좌표 변환 (카카오 로컬 API 연동)",
+        "tags": [
+          "Stores"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "전자계약 & CRM 플랫폼 API",
+    "description": "전자계약 및 CRM 기능이 포함된 플랫폼 REST API 명세서",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "reset-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "UserProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-string"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "01012345678"
+          },
+          "name": {
+            "type": "string",
+            "example": "홍길동"
+          },
+          "email": {
+            "type": "string",
+            "example": "test@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "STAFF"
+            ],
+            "example": "OWNER"
+          },
+          "referralCode": {
+            "type": "string",
+            "example": "ABCDEF"
+          }
+        },
+        "required": [
+          "id",
+          "phoneNumber",
+          "name",
+          "role",
+          "referralCode"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "홍길순",
+            "description": "이름"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "01099998888",
+            "description": "휴대폰 번호"
+          },
+          "password": {
+            "type": "string",
+            "description": "새 비밀번호 (최소 8자)"
+          },
+          "marketingAgreed": {
+            "type": "boolean",
+            "description": "마케팅 수신 동의"
+          }
+        }
+      },
+      "MessageResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Password has been reset successfully."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "01012345678",
+            "description": "휴대폰 번호"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password1234!",
+            "description": "비밀번호"
+          }
+        },
+        "required": [
+          "phoneNumber",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "accessToken"
+        ]
+      },
+      "TermsDto": {
+        "type": "object",
+        "properties": {
+          "serviceAgreed": {
+            "type": "boolean",
+            "description": "이용 약관 동의 (필수, true여야 함)"
+          },
+          "privacyAgreed": {
+            "type": "boolean",
+            "description": "개인정보 수집 동의 (필수, true여야 함)"
+          },
+          "marketingAgreed": {
+            "type": "boolean",
+            "description": "마케팅 수신 동의 (선택)",
+            "default": false
+          }
+        },
+        "required": [
+          "serviceAgreed",
+          "privacyAgreed"
+        ]
+      },
+      "RegisterOwnerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "이름"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "01012345678",
+            "description": "휴대폰 번호"
+          },
+          "email": {
+            "type": "string",
+            "example": "owner@example.com",
+            "description": "이메일 (선택)"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password1234!",
+            "description": "비밀번호 (최소 8자)"
+          },
+          "terms": {
+            "description": "약관 동의",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TermsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "phoneNumber",
+          "password",
+          "terms"
+        ]
+      },
+      "RegisterResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Owner registered successfully."
+          },
+          "userId": {
+            "type": "string",
+            "example": "uuid-string"
+          }
+        },
+        "required": [
+          "message",
+          "userId"
+        ]
+      },
+      "RegisterStaffDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "김직원",
+            "description": "이름"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "01098765432",
+            "description": "휴대폰 번호"
+          },
+          "email": {
+            "type": "string",
+            "example": "staff@example.com",
+            "description": "이메일 (선택)"
+          },
+          "password": {
+            "type": "string",
+            "example": "Password1234!",
+            "description": "비밀번호 (최소 8자)"
+          },
+          "terms": {
+            "description": "약관 동의",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TermsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "phoneNumber",
+          "password",
+          "terms"
+        ]
+      },
+      "ResetTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "resetToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "resetToken"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "example": "NewPassword5678!",
+            "description": "변경할 새 비밀번호 (최소 8자)"
+          }
+        },
+        "required": [
+          "newPassword"
+        ]
+      },
+      "StoreItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "storeId": {
+            "type": "string",
+            "example": "uuid-string"
+          },
+          "storeName": {
+            "type": "string",
+            "example": "홍길동 강남점"
+          },
+          "address": {
+            "type": "string",
+            "example": "서울 강남구 테헤란로 123, 2층"
+          },
+          "rate": {
+            "type": "string",
+            "example": "프리미엄 요금제"
+          },
+          "ownerName": {
+            "type": "string",
+            "example": "홍길동"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0212345678"
+          }
+        },
+        "required": [
+          "storeId",
+          "storeName",
+          "address",
+          "ownerName",
+          "phoneNumber"
+        ]
+      },
+      "CreateStoreDto": {
+        "type": "object",
+        "properties": {
+          "storeBusinessName": {
+            "type": "string",
+            "example": "홍길동통신",
+            "description": "사업자등록증 상 상호명"
+          },
+          "storeName": {
+            "type": "string",
+            "example": "홍길동 강남점",
+            "description": "매장 표시명"
+          },
+          "businessRegistrationNumber": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "사업자 등록번호 (10자리, 하이픈 없이)"
+          },
+          "postcode": {
+            "type": "string",
+            "example": "06234",
+            "description": "우편번호"
+          },
+          "roadAddress": {
+            "type": "string",
+            "example": "서울 강남구 테헤란로 123",
+            "description": "도로명 주소"
+          },
+          "jibunAddress": {
+            "type": "string",
+            "example": "서울 강남구 역삼동 123",
+            "description": "지번 주소"
+          },
+          "detailedAddress": {
+            "type": "string",
+            "example": "2층 201호",
+            "description": "상세 주소"
+          },
+          "lat": {
+            "type": "number",
+            "example": 37.5005,
+            "description": "위도 (Latitude)"
+          },
+          "lng": {
+            "type": "number",
+            "example": 127.0364,
+            "description": "경도 (Longitude)"
+          },
+          "storePhonenumber": {
+            "type": "string",
+            "example": "0212345678",
+            "description": "매장 전화번호 (선택)"
+          }
+        },
+        "required": [
+          "storeBusinessName",
+          "storeName",
+          "businessRegistrationNumber",
+          "postcode",
+          "detailedAddress",
+          "lat",
+          "lng"
+        ]
+      },
+      "CreateStoreResponseDto": {
+        "type": "object",
+        "properties": {
+          "storeId": {
+            "type": "string",
+            "example": "uuid-string"
+          },
+          "storeName": {
+            "type": "string",
+            "example": "홍길동 강남점"
+          },
+          "storeCode": {
+            "type": "string",
+            "example": "ABCD1234"
+          }
+        },
+        "required": [
+          "storeId",
+          "storeName",
+          "storeCode"
+        ]
+      },
+      "JoinStoreDto": {
+        "type": "object",
+        "properties": {
+          "storeCode": {
+            "type": "string",
+            "example": "ABCD1234",
+            "description": "매장 합류 코드"
+          }
+        },
+        "required": [
+          "storeCode"
+        ]
+      },
+      "JoinStoreResponseDto": {
+        "type": "object",
+        "properties": {
+          "storeId": {
+            "type": "string",
+            "example": "uuid-string"
+          },
+          "storeName": {
+            "type": "string",
+            "example": "홍길동 강남점"
+          }
+        },
+        "required": [
+          "storeId",
+          "storeName"
+        ]
+      },
+      "BusinessVerifyDto": {
+        "type": "object",
+        "properties": {
+          "businessRegistrationNumber": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "사업자등록번호 (10자리 숫자, 하이픈 제외)"
+          }
+        },
+        "required": [
+          "businessRegistrationNumber"
+        ]
+      },
+      "GeocodeResponseDto": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": "string",
+            "example": "서울 강남구 테헤란로 123"
+          },
+          "roadAddress": {
+            "type": "object",
+            "example": "서울 강남구 테헤란로 123"
+          },
+          "jibunAddress": {
+            "type": "object",
+            "example": "서울 강남구 역삼동 823"
+          },
+          "lat": {
+            "type": "number",
+            "example": 37.5005
+          },
+          "lng": {
+            "type": "number",
+            "example": 127.0364
+          }
+        },
+        "required": [
+          "addressName",
+          "lat",
+          "lng"
+        ]
+      }
+    }
+  }
+}

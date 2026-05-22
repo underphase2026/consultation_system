@@ -43,6 +43,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
+  // Auto-extract Swagger JSON
+  const fs = await import('fs');
+  fs.writeFileSync('swagger-spec.json', JSON.stringify(document, null, 2));
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}/api`);

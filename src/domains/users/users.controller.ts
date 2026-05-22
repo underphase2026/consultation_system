@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Body,
+  Param,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -11,6 +12,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -21,12 +23,36 @@ import { User } from './entities/user.entity';
 import { UserProfileResponseDto } from './dto/user-response.dto';
 import { MessageResponseDto } from '../auth/dto/auth-response.dto';
 
+import { Role } from '../../common/enums/role.enum';
+import { Roles } from '../../common/decorators/roles.decorator';
+
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  /** U3 — 모든 유저 목록 조회 (관리자 전용) */
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.OWNER)
+  @ApiOperation({ summary: '모든 유저 목록 (관리자 전용)', description: '모든 유저 목록을 조회합니다.' })
+  @ApiResponse({ status: 200, description: '모든 유저 목록 반환' })
+  async getAllUsers() {
+    return [];
+  }
+
+  /** U4 — 유저 조회 (관리자 전용) */
+  @Get(':user_id')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.OWNER)
+  @ApiOperation({ summary: '유저 조회 (관리자 전용)', description: 'ID를 사용하여 학생/유저를 조회합니다.' })
+  @ApiParam({ name: 'user_id', description: '조회할 유저의 ID' })
+  @ApiResponse({ status: 200, description: '유저 정보 반환' })
+  async getUserById(@Param('user_id') userId: string) {
+    return { id: userId };
+  }
 
   /** U1 — 내 정보 조회 */
   @Get('me')

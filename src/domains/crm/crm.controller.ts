@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiExcludeController } from '@nestjs/swagger';
 import { CrmService } from './crm.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
@@ -11,6 +11,7 @@ import { Role } from '../../common/enums/role.enum';
 @ApiTags('CRM')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@ApiExcludeController()
 @Controller('crm')
 export class CrmController {
   constructor(private readonly crmService: CrmService) {}
