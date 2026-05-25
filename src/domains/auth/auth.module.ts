@@ -6,17 +6,18 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { SmsAuthService } from './sms-auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtResetStrategy } from './strategies/jwt-reset.strategy';
 import { UsersModule } from '../users/users.module';
-// import { RedisModule } from '../../infrastructure/redis/redis.module'; // SMS 인증 비활성화
-// import { SmsModule } from '../../infrastructure/sms/sms.module'; // SMS 인증 비활성화
+// import { RedisModule } from '../../infrastructure/redis/redis.module'; // Redis 사용 안함
+import { SmsModule } from '../../infrastructure/sms/sms.module';
 
 @Module({
   imports: [
     UsersModule,
-    // RedisModule, // SMS 인증 비활성화
-    // SmsModule, // SMS 인증 비활성화
+    // RedisModule, // Redis 사용 안함
+    SmsModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -32,6 +33,7 @@ import { UsersModule } from '../users/users.module';
   controllers: [AuthController],
   providers: [
     AuthService,
+    SmsAuthService,
     JwtStrategy,
     JwtResetStrategy,
     // ThrottlerGuard를 AuthModule 전역이 아닌 컨트롤러 레벨에서 적용
@@ -40,6 +42,6 @@ import { UsersModule } from '../users/users.module';
       useClass: ThrottlerGuard,
     },
   ],
-  exports: [AuthService],
+  exports: [AuthService, SmsAuthService],
 })
 export class AuthModule {}

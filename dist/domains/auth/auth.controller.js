@@ -15,18 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const auth_service_1 = require("./auth.service");
+const sms_auth_service_1 = require("./sms-auth.service");
 const login_dto_1 = require("./dto/login.dto");
 const register_owner_dto_1 = require("./dto/register-owner.dto");
 const register_staff_dto_1 = require("./dto/register-staff.dto");
 const forgot_password_dto_1 = require("./dto/forgot-password.dto");
+const sms_dto_1 = require("./dto/sms.dto");
 const jwt_reset_guard_1 = require("../../common/guards/jwt-reset.guard");
 const auth_response_dto_1 = require("./dto/auth-response.dto");
 const ResetUser = (0, common_1.createParamDecorator)((_, ctx) => ctx.switchToHttp().getRequest().user);
 let AuthController = class AuthController {
     authService;
-    constructor(authService) {
+    smsAuthService;
+    constructor(authService, smsAuthService) {
         this.authService = authService;
+        this.smsAuthService = smsAuthService;
     }
     async login(dto) {
         return this.authService.login(dto);
@@ -47,6 +52,12 @@ let AuthController = class AuthController {
             });
         }
         return authHeader.replace('Bearer ', '').trim();
+    }
+    async sendSmsCode(dto) {
+        return this.smsAuthService.sendSmsCode(dto);
+    }
+    async verifySmsCode(dto) {
+        return this.smsAuthService.verifySmsCode(dto);
     }
     issueResetToken(phoneNumber) {
         return this.authService.issueResetToken(phoneNumber);
@@ -95,6 +106,46 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "registerStaff", null);
 __decorate([
+    (0, common_1.Post)('sms/send'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60000 } }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'SMS 인증번호 발송 요청 (분당 3회 제한)',
+        description: '입력한 번호로 6자리 인증번호를 발송합니다. 인증번호는 3분간 유효합니다.',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '발송 완료', type: auth_response_dto_1.MessageResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 429, description: '너무 많은 요청 (분당 3회 초과)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [sms_dto_1.SendSmsDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "sendSmsCode", null);
+__decorate([
+    (0, common_1.Post)('sms/verify'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'SMS 인증번호 검증 (분당 5회 제한)',
+        description: '인증번호 일치 시 5분 유효한 phoneVerifyToken을 반환합니다. 회원가입 시 이 토큰을 사용하세요.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: '인증 성공 — phoneVerifyToken 반환',
+        schema: {
+            example: {
+                success: true,
+                data: { phoneVerifyToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', expiresIn: 300 },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: '인증번호 불일치 또는 만료' }),
+    (0, swagger_1.ApiResponse)({ status: 429, description: '너무 많은 요청 (분당 5회 초과)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [sms_dto_1.VerifySmsDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verifySmsCode", null);
+__decorate([
     (0, common_1.Post)('reset-token'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
@@ -124,6 +175,7 @@ __decorate([
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        sms_auth_service_1.SmsAuthService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

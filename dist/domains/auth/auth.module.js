@@ -15,9 +15,11 @@ const core_1 = require("@nestjs/core");
 const throttler_1 = require("@nestjs/throttler");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
+const sms_auth_service_1 = require("./sms-auth.service");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const jwt_reset_strategy_1 = require("./strategies/jwt-reset.strategy");
 const users_module_1 = require("../users/users.module");
+const sms_module_1 = require("../../infrastructure/sms/sms.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -25,6 +27,7 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             users_module_1.UsersModule,
+            sms_module_1.SmsModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
@@ -40,6 +43,7 @@ exports.AuthModule = AuthModule = __decorate([
         controllers: [auth_controller_1.AuthController],
         providers: [
             auth_service_1.AuthService,
+            sms_auth_service_1.SmsAuthService,
             jwt_strategy_1.JwtStrategy,
             jwt_reset_strategy_1.JwtResetStrategy,
             {
@@ -47,7 +51,7 @@ exports.AuthModule = AuthModule = __decorate([
                 useClass: throttler_1.ThrottlerGuard,
             },
         ],
-        exports: [auth_service_1.AuthService],
+        exports: [auth_service_1.AuthService, sms_auth_service_1.SmsAuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

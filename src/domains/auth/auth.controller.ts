@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
+import { SmsAuthService } from './sms-auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOwnerDto } from './dto/register-owner.dto';
 import { RegisterStaffDto } from './dto/register-staff.dto';
@@ -40,7 +41,10 @@ const ResetUser = createParamDecorator(
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly smsAuthService: SmsAuthService,
+  ) {}
 
   /** A1 — 로그인 */
   @Post('login')
@@ -94,7 +98,6 @@ export class AuthController {
     return authHeader.replace('Bearer ', '').trim();
   }
 
-  /*
   // A-SMS-1 — 인증번호 발송 요청
   @Post('sms/send')
   @HttpCode(HttpStatus.OK)
@@ -106,7 +109,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: '발송 완료', type: MessageResponseDto })
   @ApiResponse({ status: 429, description: '너무 많은 요청 (분당 3회 초과)' })
   async sendSmsCode(@Body() dto: SendSmsDto) {
-    return this.authService.sendSmsCode(dto);
+    return this.smsAuthService.sendSmsCode(dto);
   }
 
   // A-SMS-2 — 인증번호 검증
@@ -130,9 +133,8 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '인증번호 불일치 또는 만료' })
   @ApiResponse({ status: 429, description: '너무 많은 요청 (분당 5회 초과)' })
   async verifySmsCode(@Body() dto: VerifySmsDto) {
-    return this.authService.verifySmsCode(dto);
+    return this.smsAuthService.verifySmsCode(dto);
   }
-  */
 
   /**
    * A4-a — 비밀번호 재설정 토큰 발급
