@@ -10,6 +10,7 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const event_emitter_1 = require("@nestjs/event-emitter");
+const schedule_1 = require("@nestjs/schedule");
 const throttler_1 = require("@nestjs/throttler");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
@@ -19,6 +20,7 @@ const auth_module_1 = require("./domains/auth/auth.module");
 const users_module_1 = require("./domains/users/users.module");
 const stores_module_1 = require("./domains/stores/stores.module");
 const contracts_module_1 = require("./domains/contracts/contracts.module");
+const electronic_contracts_module_1 = require("./domains/electronic-contracts/electronic-contracts.module");
 const crm_module_1 = require("./domains/crm/crm.module");
 const consultations_module_1 = require("./domains/consultations/consultations.module");
 const public_data_module_1 = require("./infrastructure/public-data/public-data.module");
@@ -40,6 +42,7 @@ exports.AppModule = AppModule = __decorate([
                 },
             ]),
             event_emitter_1.EventEmitterModule.forRoot(),
+            schedule_1.ScheduleModule.forRoot(),
             cache_manager_1.CacheModule.registerAsync({
                 isGlobal: true,
                 useFactory: async () => ({
@@ -58,6 +61,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             stores_module_1.StoresModule,
             contracts_module_1.ContractsModule,
+            electronic_contracts_module_1.ElectronicContractsModule,
             crm_module_1.CrmModule,
             consultations_module_1.ConsultationsModule,
         ],

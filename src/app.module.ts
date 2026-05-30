@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
@@ -12,6 +13,7 @@ import { AuthModule } from './domains/auth/auth.module';
 import { UsersModule } from './domains/users/users.module';
 import { StoresModule } from './domains/stores/stores.module';
 import { ContractsModule } from './domains/contracts/contracts.module';
+import { ElectronicContractsModule } from './domains/electronic-contracts/electronic-contracts.module';
 import { CrmModule } from './domains/crm/crm.module';
 import { ConsultationsModule } from './domains/consultations/consultations.module';
 import { PublicDataModule } from './infrastructure/public-data/public-data.module';
@@ -35,6 +37,9 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 
     // 이벤트 에미터 (도메인 간 통신용)
     EventEmitterModule.forRoot(),
+
+    // 스케줄러 설정 (Outbox 처리 및 백그라운드 작업용)
+    ScheduleModule.forRoot(),
 
     // Redis 캐싱 모듈 설정 (Global)
     CacheModule.registerAsync({
@@ -61,6 +66,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
     AuthModule,
     StoresModule,
     ContractsModule,
+    ElectronicContractsModule,
     CrmModule,
     ConsultationsModule,
   ],

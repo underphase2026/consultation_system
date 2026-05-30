@@ -4,12 +4,19 @@ import { ConsultationsService } from './consultations.service';
 import { GetDevicesQueryDto, DeviceResponseDto } from './dto/get-devices.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { Quote } from './entities/quote.entity';
+import { QuoteQueryService } from './quote-query.service';
+import { QuoteSummaryDto } from './dto/quote-summary.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { User } from '../users/entities/user.entity';
 
 @ApiTags('Consultations (통합 유무선 상담 및 견적)')
 @Controller('api/consultations')
 export class ConsultationsController {
-  constructor(private readonly consultationsService: ConsultationsService) {}
+  constructor(
+    private readonly consultationsService: ConsultationsService,
+    private readonly quoteQueryService: QuoteQueryService,
+  ) {}
 
   @Get('devices')
   @UseGuards(JwtAuthGuard)
@@ -21,6 +28,18 @@ export class ConsultationsController {
   @ApiResponse({ status: 200, description: '성공적으로 단말기 목록을 반환했습니다.', type: [DeviceResponseDto] })
   async getDevices(@Query() queryDto: GetDevicesQueryDto): Promise<DeviceResponseDto[]> {
     return this.consultationsService.getDevices(queryDto);
+  }
+
+  @Get('quotes/summary')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'BFF용 통합 견적 내역 조회 (CQRS Read Model)', 
+    description: 'N+1 문제를 방지하기 위해 견적, 계약 상태, CRM 정보를 Aggregation하여 반환합니다.' 
+  })
+  @ApiResponse({ status: 200, type: [QuoteSummaryDto] })
+  async getQuoteSummary(@CurrentUser() user: User): Promise<QuoteSummaryDto[]> {
+    return this.quoteQueryService.getQuoteSummaryList(user.id);
   }
 
   @Post('quotes')

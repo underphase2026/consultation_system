@@ -1,0 +1,13 @@
+﻿[Add] 아키텍처 고도화 및 서드파티 전자계약 연동
+
+[Add]
+- DB 아키텍처 평가 리포트 작성
+- 단말기 이력 관리를 위한 DeviceHistory 추가
+- 이벤트 유실 방지를 위한 EventOutbox 및 스케줄러 구현
+- BFF 통합 조회를 위한 CQRS 읽기 모델(QuoteQueryService) 추가
+- 서드파티 연동용 ElectronicContracts 모듈 신설
+- 전자계약 API 통신 및 웹훅(Webhook) 콜백 컨트롤러 추가
+
+[Edit]
+- AppModule, ConsultationsModule 신규 의존성 주입
+- ConsultationsService 견적 생성 시 트랜잭션 및 Outbox 패턴 적용

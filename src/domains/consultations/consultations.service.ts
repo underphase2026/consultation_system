@@ -2,24 +2,31 @@ import { Injectable, NotFoundException, BadRequestException, Inject } from '@nes
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Device } from './entities/device.entity';
+import { DeviceHistory } from './entities/device-history.entity';
 import { Quote } from './entities/quote.entity';
 import { GetDevicesQueryDto, SearchType, DeviceResponseDto } from './dto/get-devices.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { NetworkType } from './entities/device.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { QuoteCreatedEvent } from './events/quote-created.event';
+import { EventOutbox, OutboxStatus } from './entities/event-outbox.entity';
 
 @Injectable()
 export class ConsultationsService {
   constructor(
     @InjectRepository(Device)
     private readonly deviceRepository: Repository<Device>,
+    @InjectRepository(DeviceHistory)
+    private readonly deviceHistoryRepository: Repository<DeviceHistory>,
     @InjectRepository(Quote)
     private readonly quoteRepository: Repository<Quote>,
+    @InjectRepository(EventOutbox)
+    private readonly outboxRepository: Repository<EventOutbox>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly eventEmitter: EventEmitter2,
+    private readonly dataSource: DataSource,
   ) {}
 
   async getDevices(queryDto: GetDevicesQueryDto): Promise<DeviceResponseDto[]> {
@@ -88,22 +95,78 @@ export class ConsultationsService {
     const quoteName = `[${device.carrier}] ${device.deviceName}`;
     const tag = networkType === NetworkType.WIRED ? '유선' : '무선';
 
-    const quote = this.quoteRepository.create({
-      quoteName,
-      tag,
-      networkType,
-      carrier,
-      deviceId: device.id,
-      retailPrice: device.retailPrice,
-      publicSubsidy: device.publicSubsidy,
-      principal,
-    });
+    // Phase 2: Transaction for Outbox Pattern
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const savedQuote = await this.quoteRepository.save(quote);
+    let savedQuote: Quote;
+    try {
+      const quote = queryRunner.manager.create(Quote, {
+        quoteName,
+        tag,
+        networkType,
+        carrier,
+        deviceId: device.id,
+        retailPrice: device.retailPrice,
+        publicSubsidy: device.publicSubsidy,
+        principal,
+      });
+      savedQuote = await queryRunner.manager.save(Quote, quote);
 
-    // 이벤트 발송 (CRM 등 타 도메인과 격리된 비동기 통신)
-    this.eventEmitter.emit('quote.created', new QuoteCreatedEvent(savedQuote));
+      const outbox = queryRunner.manager.create(EventOutbox, {
+        eventType: 'quote.created',
+        payload: { quote: savedQuote }, // 리스너에서 event.quote 형식으로 접근
+      });
+      await queryRunner.manager.save(EventOutbox, outbox);
 
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+
+    // 직접적인 이벤트 발송 제거 (OutboxScheduler가 백그라운드에서 처리)
     return savedQuote;
+  }
+
+  // Phase 1: 크롤링 업데이트 시 단말기 이력(History) 테이블 분리 및 적재 (CDC 패턴)
+  async upsertDeviceWithHistory(
+    deviceId: string,
+    retailPrice: number,
+    publicSubsidy: number,
+  ): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 단말기 가격 업데이트
+      const device = await queryRunner.manager.findOne(Device, { where: { id: deviceId } });
+      if (!device) {
+        throw new NotFoundException('단말기를 찾을 수 없습니다.');
+      }
+
+      device.retailPrice = retailPrice;
+      device.publicSubsidy = publicSubsidy;
+      await queryRunner.manager.save(Device, device);
+
+      // 2. 단말기 가격 이력을 History 테이블에 저장
+      const history = queryRunner.manager.create(DeviceHistory, {
+        deviceId: device.id,
+        retailPrice,
+        publicSubsidy,
+      });
+      await queryRunner.manager.save(DeviceHistory, history);
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
