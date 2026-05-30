@@ -585,6 +585,125 @@
           "Stores"
         ]
       }
+    },
+    "/api/api/consultations/devices": {
+      "get": {
+        "description": "조건에 맞는 단말기 목록과 계산된 가격(출고가, 공시지원금, 할부원금)을 반환합니다.",
+        "operationId": "ConsultationsController_getDevices",
+        "parameters": [
+          {
+            "name": "networkType",
+            "required": true,
+            "in": "query",
+            "description": "유무선 구분",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "WIRELESS",
+                "WIRED"
+              ]
+            }
+          },
+          {
+            "name": "carrier",
+            "required": true,
+            "in": "query",
+            "description": "통신사",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SKT",
+                "KT",
+                "LGU"
+              ]
+            }
+          },
+          {
+            "name": "searchType",
+            "required": false,
+            "in": "query",
+            "description": "검색 조건 (기종명 또는 모델명)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEVICE_NAME",
+                "MODEL_NAME"
+              ]
+            }
+          },
+          {
+            "name": "keyword",
+            "required": false,
+            "in": "query",
+            "description": "검색어",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공적으로 단말기 목록을 반환했습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "단말기 리스트 및 검색 API",
+        "tags": [
+          "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      }
+    },
+    "/api/api/consultations/quotes": {
+      "post": {
+        "description": "선택한 단말기 정보를 바탕으로 현재 가격 스냅샷을 포함한 견적을 생성합니다.",
+        "operationId": "ConsultationsController_createQuote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공적으로 견적을 생성했습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "통합 견적 생성 API",
+        "tags": [
+          "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      }
     }
   },
   "info": {
@@ -1083,6 +1202,97 @@
           "lat",
           "lng"
         ]
+      },
+      "DeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "단말기 ID"
+          },
+          "networkType": {
+            "type": "string",
+            "description": "유무선 구분",
+            "enum": [
+              "WIRELESS",
+              "WIRED"
+            ]
+          },
+          "carrier": {
+            "type": "string",
+            "description": "통신사",
+            "enum": [
+              "SKT",
+              "KT",
+              "LGU"
+            ]
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "단말기 기종명"
+          },
+          "modelName": {
+            "type": "string",
+            "description": "모델명"
+          },
+          "retailPrice": {
+            "type": "number",
+            "description": "출고가"
+          },
+          "publicSubsidy": {
+            "type": "number",
+            "description": "공시지원금"
+          },
+          "principal": {
+            "type": "number",
+            "description": "할부원금 (출고가 - 공시지원금)"
+          }
+        },
+        "required": [
+          "id",
+          "networkType",
+          "carrier",
+          "deviceName",
+          "modelName",
+          "retailPrice",
+          "publicSubsidy",
+          "principal"
+        ]
+      },
+      "CreateQuoteDto": {
+        "type": "object",
+        "properties": {
+          "networkType": {
+            "type": "string",
+            "description": "유무선 구분",
+            "enum": [
+              "WIRELESS",
+              "WIRED"
+            ]
+          },
+          "carrier": {
+            "type": "string",
+            "description": "통신사",
+            "enum": [
+              "SKT",
+              "KT",
+              "LGU"
+            ]
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "선택된 단말기 ID"
+          }
+        },
+        "required": [
+          "networkType",
+          "carrier",
+          "deviceId"
+        ]
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

@@ -11,6 +11,7 @@ import { UsersModule } from './domains/users/users.module';
 import { StoresModule } from './domains/stores/stores.module';
 import { ContractsModule } from './domains/contracts/contracts.module';
 import { CrmModule } from './domains/crm/crm.module';
+import { ConsultationsModule } from './domains/consultations/consultations.module';
 import { PublicDataModule } from './infrastructure/public-data/public-data.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
@@ -45,6 +46,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
     StoresModule,
     ContractsModule,
     CrmModule,
+    ConsultationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
