@@ -12,9 +12,10 @@ export enum Carrier {
 }
 
 @Entity('devices')
-@Index(['networkType', 'carrier'])
-@Index(['networkType', 'carrier', 'deviceName'])
-@Index(['networkType', 'carrier', 'modelName'])
+@Index(['networkType', 'carrier']) // 복합 인덱스 (기본 필터링용)
+// TypeORM fulltext 옵션을 활용한 인덱스 (PostgreSQL의 경우 Migration을 통해 pg_trgm GIN 인덱스 생성 권장)
+@Index('IDX_DEVICE_NAME_FULLTEXT', ['deviceName'], { fulltext: true })
+@Index('IDX_MODEL_NAME_FULLTEXT', ['modelName'], { fulltext: true })
 export class Device {
   @PrimaryGeneratedColumn('uuid')
   id: string;

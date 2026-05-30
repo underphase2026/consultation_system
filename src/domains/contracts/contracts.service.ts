@@ -10,8 +10,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { Contract } from './entities/contract.entity';
 import { ContractStatus } from './enums/contract-status.enum';
 import { CreateContractDto } from './dto/contract.dto';
+import { CreateElectronicContractDto } from './dto/create-electronic-contract.dto';
 import { ContractCompletedEvent } from './events/contract-completed.event';
 import { StoresService } from '../stores/stores.service';
+import { Quote } from '../consultations/entities/quote.entity';
 import { Role } from '../../common/enums/role.enum';
 
 @Injectable()
@@ -19,6 +21,8 @@ export class ContractsService {
   constructor(
     @InjectRepository(Contract)
     private readonly contractRepository: Repository<Contract>,
+    @InjectRepository(Quote)
+    private readonly quoteRepository: Repository<Quote>,
     private readonly storesService: StoresService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -85,5 +89,62 @@ export class ContractsService {
     this.eventEmitter.emit('contract.esign.completed', event);
 
     return { message: '전자서명이 완료되었습니다.' };
+  }
+
+  // Phase 3: 전자계약 우선 매칭 준비 로직
+  async prepareElectronicContract(userId: string, role: Role, dto: CreateElectronicContractDto) {
+    const { quoteId, customerName, customerPhone, storeId } = dto;
+
+    // 1. 견적(Quote) 존재 여부 및 스냅샷 검증
+    const quote = await this.quoteRepository.findOne({ where: { id: quoteId } });
+    if (!quote) {
+      throw new NotFoundException({
+        code: 'QUOTE_NOT_FOUND',
+        message: '유효하지 않은 견적 데이터입니다.',
+      });
+    }
+
+    // 2. 권한 검증 (매장) - 초기 형태이므로 storeId가 있다면 검증
+    if (storeId) {
+      const myStores = await this.storesService.getMyStores(userId, role);
+      const hasAccess = myStores.some((s) => s.storeId === storeId);
+      
+      if (!hasAccess) {
+        throw new ForbiddenException({
+          code: 'STORE_ACCESS_DENIED',
+          message: '해당 매장에 대한 권한이 없습니다.',
+        });
+      }
+    }
+
+    // 3. 전자서명 템플릿 매핑을 위한 외부 ID 발급 및 계약서 생성 (스냅샷 연결)
+    const electronicContractId = uuidv4();
+
+    const contract = this.contractRepository.create({
+      storeId: storeId || 'TEMP_STORE', // 실제 구현 시 맵핑 필요
+      customerName,
+      customerPhone,
+      status: ContractStatus.E_SIGN_PENDING,
+      electronicContractId,
+    });
+
+    await this.contractRepository.save(contract);
+
+    // 4. 추후 이벤트 발송 등 연동을 위해 Quote에도 Contract ID 업데이트 가능(옵션)
+    // quote.contractId = contract.id;
+    // await this.quoteRepository.save(quote);
+
+    return {
+      message: '전자계약 템플릿 매핑 및 준비 완료',
+      contractId: contract.id,
+      electronicContractId,
+      quoteId: quote.id,
+      snapshot: {
+        retailPrice: quote.retailPrice,
+        publicSubsidy: quote.publicSubsidy,
+        principal: quote.principal,
+      },
+      status: contract.status,
+    };
   }
 }

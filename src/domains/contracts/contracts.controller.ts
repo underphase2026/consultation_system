@@ -2,6 +2,7 @@ import { Controller, Post, Body, Param, Patch, HttpCode, HttpStatus } from '@nes
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiExcludeController } from '@nestjs/swagger';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto, ContractResponseDto } from './dto/contract.dto';
+import { CreateElectronicContractDto } from './dto/create-electronic-contract.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -21,6 +22,14 @@ export class ContractsController {
   @ApiResponse({ status: 201, type: ContractResponseDto })
   async createContract(@CurrentUser() user: User, @Body() dto: CreateContractDto) {
     return this.contractsService.createContract(user.id, user.role, dto);
+  }
+
+  @Post('electronic')
+  @HttpCode(HttpStatus.CREATED)
+  @Roles(Role.OWNER, Role.STAFF)
+  @ApiOperation({ summary: '전자계약 우선 매칭 엔드포인트 신설' })
+  async prepareElectronicContract(@CurrentUser() user: User, @Body() dto: CreateElectronicContractDto) {
+    return this.contractsService.prepareElectronicContract(user.id, user.role, dto);
   }
 
   @Patch(':id/esign-complete')

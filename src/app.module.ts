@@ -5,6 +5,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 import { AuthModule } from './domains/auth/auth.module';
 import { UsersModule } from './domains/users/users.module';
@@ -33,6 +35,20 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 
     // 이벤트 에미터 (도메인 간 통신용)
     EventEmitterModule.forRoot(),
+
+    // Redis 캐싱 모듈 설정 (Global)
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        store: await redisStore({
+          socket: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379', 10),
+          },
+          ttl: 60000, // 기본 60초 캐싱
+        }),
+      }),
+    }),
 
     // 데이터베이스 모듈
     DatabaseModule,

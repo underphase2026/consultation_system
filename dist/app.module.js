@@ -13,6 +13,8 @@ const event_emitter_1 = require("@nestjs/event-emitter");
 const throttler_1 = require("@nestjs/throttler");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
+const cache_manager_1 = require("@nestjs/cache-manager");
+const cache_manager_redis_yet_1 = require("cache-manager-redis-yet");
 const auth_module_1 = require("./domains/auth/auth.module");
 const users_module_1 = require("./domains/users/users.module");
 const stores_module_1 = require("./domains/stores/stores.module");
@@ -38,6 +40,18 @@ exports.AppModule = AppModule = __decorate([
                 },
             ]),
             event_emitter_1.EventEmitterModule.forRoot(),
+            cache_manager_1.CacheModule.registerAsync({
+                isGlobal: true,
+                useFactory: async () => ({
+                    store: await (0, cache_manager_redis_yet_1.redisStore)({
+                        socket: {
+                            host: process.env.REDIS_HOST || 'localhost',
+                            port: parseInt(process.env.REDIS_PORT || '6379', 10),
+                        },
+                        ttl: 60000,
+                    }),
+                }),
+            }),
             database_module_1.DatabaseModule,
             public_data_module_1.PublicDataModule,
             users_module_1.UsersModule,
