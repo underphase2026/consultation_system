@@ -43,6 +43,24 @@ export class UsersController {
     return [];
   }
 
+  /** U1 — 내 정보 조회 */
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '내 정보 조회' })
+  @ApiResponse({ status: 200, description: '내 정보 반환', type: UserProfileResponseDto })
+  async getMe(@CurrentUser() user: User) {
+    return {
+      id: user.id,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      birthDate: user.birthDate ?? null,
+      email: user.email ?? null,
+      referralCode: user.referralCode,
+      marketingAgreed: user.terms?.marketingAgreed ?? false,
+      role: user.role,
+    };
+  }
+
   /** U4 — 유저 조회 (관리자 전용) */
   @Get(':user_id')
   @HttpCode(HttpStatus.OK)
@@ -52,23 +70,6 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '유저 정보 반환' })
   async getUserById(@Param('user_id') userId: string) {
     return { id: userId };
-  }
-
-  /** U1 — 내 정보 조회 */
-  @Get('me')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '내 정보 조회' })
-  @ApiResponse({ status: 200, description: '내 정보 반환', type: UserProfileResponseDto })
-  async getMe(@CurrentUser() user: User) {
-    return {
-      name: user.name,
-      phoneNumber: user.phoneNumber,
-      birthDate: user.birthDate ?? null,
-      email: user.email ?? null,
-      referralCode: user.referralCode,
-      marketingAgreed: user.terms?.marketingAgreed ?? false,
-      role: user.role,
-    };
   }
 
   /** U2 — 내 정보 수정 */

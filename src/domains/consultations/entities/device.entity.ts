@@ -38,6 +38,9 @@ export class Device {
   @Column({ type: 'int', default: 0, comment: '공시지원금' })
   publicSubsidy: number;
 
+  @Column({ type: 'date', nullable: true, comment: '출시일' })
+  releaseDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

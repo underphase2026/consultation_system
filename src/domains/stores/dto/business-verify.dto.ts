@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Matches } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class BusinessVerifyDto {
   @ApiProperty({
     example: '1234567890',
-    description: '사업자등록번호 (10자리 숫자, 하이픈 제외)',
+    description: '사업자등록번호 (어떤 형태든 입력 가능)',
   })
   @IsString()
-  @Matches(/^[0-9]{10}$/, { message: '사업자등록번호는 10자리 숫자여야 합니다.' })
+  @IsNotEmpty({ message: '사업자등록번호를 입력해주세요.' })
   businessRegistrationNumber: string;
 }

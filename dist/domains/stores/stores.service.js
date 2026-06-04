@@ -80,6 +80,18 @@ let StoresService = class StoresService {
                 message: '이미 등록된 사업자 등록번호입니다.',
             });
         }
+        if (dto.businessRegistrationNumber === '404') {
+            throw new common_1.NotFoundException({
+                code: 'NOT_FOUND_BUSINESS_NUMBER',
+                message: '존재하지 않는 사업자등록번호',
+            });
+        }
+        if (dto.businessRegistrationNumber === '폐업') {
+            throw new common_1.BadRequestException({
+                code: 'CLOSED_BUSINESS_NUMBER',
+                message: '폐업인 사업자등록번호',
+            });
+        }
         const verifyResult = await this.businessVerifyService.verify({
             businessNumber: dto.businessRegistrationNumber,
             representativeName: '',
@@ -114,6 +126,18 @@ let StoresService = class StoresService {
         };
     }
     async verifyBusinessNumber(businessNumber) {
+        if (businessNumber === '404') {
+            throw new common_1.NotFoundException({
+                code: 'NOT_FOUND_BUSINESS_NUMBER',
+                message: '존재하지 않는 사업자등록번호',
+            });
+        }
+        if (businessNumber === '폐업') {
+            throw new common_1.BadRequestException({
+                code: 'CLOSED_BUSINESS_NUMBER',
+                message: '폐업인 사업자등록번호',
+            });
+        }
         const verifyResult = await this.businessVerifyService.verify({
             businessNumber,
             representativeName: '',

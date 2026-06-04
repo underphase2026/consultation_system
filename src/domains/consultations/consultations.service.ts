@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Device } from './entities/device.entity';
 import { DeviceHistory } from './entities/device-history.entity';
 import { Quote } from './entities/quote.entity';
 import { GetDevicesQueryDto, SearchType, DeviceResponseDto } from './dto/get-devices.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
-import { NetworkType } from './entities/device.entity';
+import { NetworkType, Carrier } from './entities/device.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { QuoteCreatedEvent } from './events/quote-created.event';
 import { EventOutbox, OutboxStatus } from './entities/event-outbox.entity';
@@ -52,12 +52,13 @@ export class ConsultationsService {
       }
     }
 
-    // 최근 추가된 단말기 순으로 정렬
-    query.orderBy('device.id', 'DESC');
+    // 최신 출시일 순으로 정렬 (출시일이 같으면 최신 등록순)
+    query.orderBy('device.releaseDate', 'DESC')
+         .addOrderBy('device.id', 'DESC');
 
     const devices = await query.getMany();
 
-    const result = devices.map(device => {
+    const result = devices.map((device: Device) => {
       // 서버 단에서 할부원금 계산 (마이너스 방지)
       const principal = Math.max(0, device.retailPrice - device.publicSubsidy);
 
@@ -69,6 +70,7 @@ export class ConsultationsService {
         modelName: device.modelName,
         retailPrice: device.retailPrice,
         publicSubsidy: device.publicSubsidy,
+        releaseDate: device.releaseDate,
         principal,
       };
     });
@@ -168,5 +170,54 @@ export class ConsultationsService {
     } finally {
       await queryRunner.release();
     }
+  }
+  async seedDevices(): Promise<void> {
+    await this.deviceHistoryRepository.createQueryBuilder().delete().execute();
+    await this.deviceRepository.createQueryBuilder().delete().execute();
+
+    const samsungModels = [
+      { name: 'Galaxy S26 Ultra', model: 'SM-S948N', price: 1798400, sub: 500000, date: '2026-01-30' },
+      { name: 'Galaxy S26+', model: 'SM-S946N', price: 1453000, sub: 450000, date: '2026-01-30' },
+      { name: 'Galaxy S26', model: 'SM-S941N', price: 1255000, sub: 400000, date: '2026-01-30' },
+      { name: 'Galaxy S25 Ultra', model: 'SM-S938N', price: 1698400, sub: 500000, date: '2025-01-30' },
+      { name: 'Galaxy S25+', model: 'SM-S936N', price: 1353000, sub: 450000, date: '2025-01-30' },
+      { name: 'Galaxy S25', model: 'SM-S931N', price: 1155000, sub: 400000, date: '2025-01-30' },
+      { name: 'Galaxy Z Fold6', model: 'SM-F956N', price: 2229700, sub: 600000, date: '2024-07-24' },
+      { name: 'Galaxy Z Flip6', model: 'SM-F741N', price: 1485000, sub: 550000, date: '2024-07-24' },
+      { name: 'Galaxy S24 Ultra', model: 'SM-S928N', price: 1698400, sub: 600000, date: '2024-01-31' },
+      { name: 'Galaxy S24+', model: 'SM-S926N', price: 1353000, sub: 500000, date: '2024-01-31' },
+    ];
+
+    const appleModels = [
+      { name: 'iPhone 17 Pro Max', model: 'IP17-PM', price: 1900000, sub: 450000, date: '2025-09-20' },
+      { name: 'iPhone 17 Pro', model: 'IP17-P', price: 1550000, sub: 400000, date: '2025-09-20' },
+      { name: 'iPhone 17 Plus', model: 'IP17-PL', price: 1350000, sub: 350000, date: '2025-09-20' },
+      { name: 'iPhone 17', model: 'IP17', price: 1250000, sub: 300000, date: '2025-09-20' },
+      { name: 'iPhone 16 Pro Max', model: 'IP16-PM', price: 1900000, sub: 500000, date: '2024-09-20' },
+      { name: 'iPhone 16 Pro', model: 'IP16-P', price: 1550000, sub: 450000, date: '2024-09-20' },
+      { name: 'iPhone 16 Plus', model: 'IP16-PL', price: 1350000, sub: 400000, date: '2024-09-20' },
+      { name: 'iPhone 16', model: 'IP16', price: 1250000, sub: 350000, date: '2024-09-20' },
+      { name: 'iPhone 15 Pro Max', model: 'IP15-PM', price: 1750000, sub: 550000, date: '2023-09-22' },
+      { name: 'iPhone 15 Pro', model: 'IP15-P', price: 1400000, sub: 500000, date: '2023-09-22' },
+    ];
+
+    const carriers = [Carrier.SKT, Carrier.KT, Carrier.LGU];
+    const newDevices: any[] = [];
+
+    for (const carrier of carriers) {
+      for (const model of [...samsungModels, ...appleModels]) {
+        newDevices.push(this.deviceRepository.create({
+          networkType: NetworkType.WIRELESS,
+          carrier,
+          deviceName: model.name,
+          modelName: model.model,
+          retailPrice: model.price,
+          publicSubsidy: model.sub,
+          releaseDate: model.date,
+        }));
+      }
+    }
+
+    await this.deviceRepository.save(newDevices);
   }
 }

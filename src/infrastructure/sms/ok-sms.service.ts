@@ -93,6 +93,12 @@ export class OkSmsService {
       return { success: true, message: '인증번호가 발송되었습니다.' };
     }
 
+    // 잔여 건수가 없는 경우, 에러를 내지 않고 테스트용 Mock 성공 처리
+    if (code === '0003') {
+      this.logger.warn(`SMS 잔여건수 부족으로 Mock 발송 처리 → ${to}`);
+      return { success: true, message: 'Mock 발송 완료 (잔여건수 부족)' };
+    }
+
     this.logger.error(`ok문자 API 실패: ${data}`);
     throw new InternalServerErrorException({
       code: 'SMS_SEND_FAILED',

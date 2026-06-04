@@ -72,37 +72,6 @@
         ]
       }
     },
-    "/api/users/{user_id}": {
-      "get": {
-        "description": "ID를 사용하여 학생/유저를 조회합니다.",
-        "operationId": "UsersController_getUserById",
-        "parameters": [
-          {
-            "name": "user_id",
-            "required": true,
-            "in": "path",
-            "description": "조회할 유저의 ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "유저 정보 반환"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "유저 조회 (관리자 전용)",
-        "tags": [
-          "Users"
-        ]
-      }
-    },
     "/api/users/me": {
       "get": {
         "operationId": "UsersController_getMe",
@@ -160,6 +129,37 @@
           }
         ],
         "summary": "내 정보 수정 (이름, 이메일, 생년월일만)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{user_id}": {
+      "get": {
+        "description": "ID를 사용하여 학생/유저를 조회합니다.",
+        "operationId": "UsersController_getUserById",
+        "parameters": [
+          {
+            "name": "user_id",
+            "required": true,
+            "in": "path",
+            "description": "조회할 유저의 ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "유저 정보 반환"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "유저 조회 (관리자 전용)",
         "tags": [
           "Users"
         ]
@@ -586,6 +586,31 @@
         ]
       }
     },
+    "/api/api/contracts/electronic/webhook": {
+      "post": {
+        "description": "전자계약 상태 변경 이벤트를 비동기로 수신합니다.",
+        "operationId": "ElectronicContractsController_handleWebhook",
+        "parameters": [
+          {
+            "name": "x-signature",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "서드파티 전자계약 웹훅 수신",
+        "tags": [
+          "Electronic Contracts (서드파티 전자계약)"
+        ]
+      }
+    },
     "/api/api/consultations/devices": {
       "get": {
         "description": "조건에 맞는 단말기 목록과 계산된 가격(출고가, 공시지원금, 할부원금)을 반환합니다.",
@@ -662,6 +687,37 @@
           }
         ],
         "summary": "단말기 리스트 및 검색 API",
+        "tags": [
+          "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      }
+    },
+    "/api/api/consultations/quotes/summary": {
+      "get": {
+        "description": "N+1 문제를 방지하기 위해 견적, 계약 상태, CRM 정보를 Aggregation하여 반환합니다.",
+        "operationId": "ConsultationsController_getQuoteSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuoteSummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "BFF용 통합 견적 내역 조회 (CQRS Read Model)",
         "tags": [
           "Consultations (통합 유무선 상담 및 견적)"
         ]
@@ -788,6 +844,14 @@
           "marketingAgreed": {
             "type": "boolean",
             "description": "마케팅 수신 동의"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "birthDate": {
+            "type": "string",
+            "description": "생년월일 (YYYY-MM-DD)"
           }
         }
       },
@@ -1060,7 +1124,7 @@
           "businessRegistrationNumber": {
             "type": "string",
             "example": "1234567890",
-            "description": "사업자 등록번호 (10자리, 하이픈 없이)"
+            "description": "사업자 등록번호 (어떤 형태든 입력 가능)"
           },
           "postcode": {
             "type": "string",
@@ -1166,7 +1230,7 @@
           "businessRegistrationNumber": {
             "type": "string",
             "example": "1234567890",
-            "description": "사업자등록번호 (10자리 숫자, 하이픈 제외)"
+            "description": "사업자등록번호 (어떤 형태든 입력 가능)"
           }
         },
         "required": [
@@ -1243,6 +1307,11 @@
             "type": "number",
             "description": "공시지원금"
           },
+          "releaseDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "출시일 (YYYY-MM-DD 형식)"
+          },
           "principal": {
             "type": "number",
             "description": "할부원금 (출고가 - 공시지원금)"
@@ -1256,6 +1325,46 @@
           "modelName",
           "retailPrice",
           "publicSubsidy",
+          "releaseDate",
+          "principal"
+        ]
+      },
+      "QuoteSummaryDto": {
+        "type": "object",
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "description": "견적 ID"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "견적명"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "기기명"
+          },
+          "principal": {
+            "type": "number",
+            "description": "단말기 할부원금"
+          },
+          "contractId": {
+            "type": "string",
+            "description": "전자계약 ID (매핑된 경우)"
+          },
+          "contractStatus": {
+            "type": "string",
+            "description": "전자서명 상태"
+          },
+          "crmCustomerId": {
+            "type": "string",
+            "description": "연관된 CRM 고객 ID"
+          }
+        },
+        "required": [
+          "quoteId",
+          "quoteName",
+          "deviceName",
           "principal"
         ]
       },

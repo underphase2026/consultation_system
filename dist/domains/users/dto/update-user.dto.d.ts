@@ -3,4 +3,6 @@ export declare class UpdateUserDto {
     phoneNumber?: string;
     password?: string;
     marketingAgreed?: boolean;
+    email?: string;
+    birthDate?: string;
 }

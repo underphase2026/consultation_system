@@ -4,7 +4,7 @@ import { CrmController } from './crm.controller';
 import { CrmService } from './crm.service';
 import { CrmCustomer } from './entities/crm-customer.entity';
 import { StoresModule } from '../stores/stores.module';
-import { QuoteCreatedListener } from './listeners/quote-created.listener';
+import { CrmEventListener } from './listeners/crm-event.listener';
 
 @Module({
   imports: [
@@ -12,6 +12,6 @@ import { QuoteCreatedListener } from './listeners/quote-created.listener';
     StoresModule,
   ],
   controllers: [CrmController],
-  providers: [CrmService, QuoteCreatedListener],
+  providers: [CrmService, CrmEventListener],
 })
 export class CrmModule {}

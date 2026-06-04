@@ -53,4 +53,15 @@ export class ConsultationsController {
   async createQuote(@Body() createQuoteDto: CreateQuoteDto): Promise<Quote> {
     return this.consultationsService.createQuote(createQuoteDto);
   }
+
+  // @Post('devices/seed')
+  // @ApiOperation({ summary: '예시 단말기 데이터 생성' })
+  // async seedDevices() {
+  //   try {
+  //     await this.consultationsService.seedDevices();
+  //     return { success: true, message: 'Seeded devices successfully' };
+  //   } catch (error: any) {
+  //     return { success: false, error: error.message, stack: error.stack };
+  //   }
+  // }
 }

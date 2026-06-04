@@ -17,6 +17,8 @@ class UpdateUserDto {
     phoneNumber;
     password;
     marketingAgreed;
+    email;
+    birthDate;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
@@ -45,4 +47,16 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateUserDto.prototype, "marketingAgreed", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '이메일' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: '생년월일 (YYYY-MM-DD)' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "birthDate", void 0);
 //# sourceMappingURL=update-user.dto.js.map

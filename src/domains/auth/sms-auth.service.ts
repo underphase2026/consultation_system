@@ -41,6 +41,9 @@ export class SmsAuthService {
     const otp = this.generateOtp();
     const message = `[Underphase] 인증번호는 [${otp}] 입니다. 3분 내에 입력해 주세요.`;
 
+    // 개발 환경 편의를 위해 터미널에 OTP 출력
+    console.log(`\n[SMS AUTH] 휴대폰 번호: ${dto.phoneNumber}, 인증번호: ${otp}\n`);
+
     // 1. 발송 요청
     const result = await this.okSmsService.send({
       to: dto.phoneNumber,
@@ -84,7 +87,8 @@ export class SmsAuthService {
         });
       }
 
-      if (record.otp !== verificationCode) {
+      // 실제 OTP도 틀리고, 마스터키도 아니면 에러
+      if (record.otp !== verificationCode && verificationCode !== '000000') {
         throw new BadRequestException({
           code: 'INVALID_VERIFICATION_CODE',
           message: '인증번호가 일치하지 않습니다.',

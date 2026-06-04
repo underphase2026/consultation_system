@@ -9,14 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CrmCustomer = void 0;
+exports.CrmCustomer = exports.CrmCustomerStatus = void 0;
 const typeorm_1 = require("typeorm");
+var CrmCustomerStatus;
+(function (CrmCustomerStatus) {
+    CrmCustomerStatus["CONSULTING"] = "CONSULTING";
+    CrmCustomerStatus["CONTRACT_COMPLETED"] = "CONTRACT_COMPLETED";
+    CrmCustomerStatus["ACTIVATION_PENDING"] = "ACTIVATION_PENDING";
+})(CrmCustomerStatus || (exports.CrmCustomerStatus = CrmCustomerStatus = {}));
 let CrmCustomer = class CrmCustomer {
     id;
     storeId;
     name;
     phone;
+    status;
     lastContractDate;
+    metadata;
     createdAt;
     updatedAt;
 };
@@ -26,22 +34,34 @@ __decorate([
     __metadata("design:type", String)
 ], CrmCustomer.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid', name: 'store_id' }),
+    (0, typeorm_1.Column)({ type: 'uuid', name: 'store_id', nullable: true }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], CrmCustomer.prototype, "storeId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], CrmCustomer.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], CrmCustomer.prototype, "phone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: CrmCustomerStatus,
+        default: CrmCustomerStatus.CONSULTING,
+    }),
+    __metadata("design:type", String)
+], CrmCustomer.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'timestamp', name: 'last_contract_date', nullable: true }),
     __metadata("design:type", Date)
 ], CrmCustomer.prototype, "lastContractDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true, comment: '최신 견적 ID 등 여러 외부 식별자 저장' }),
+    __metadata("design:type", Object)
+], CrmCustomer.prototype, "metadata", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
