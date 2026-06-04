@@ -1315,6 +1315,10 @@
           "principal": {
             "type": "number",
             "description": "할부원금 (출고가 - 공시지원금)"
+          },
+          "specs": {
+            "type": "object",
+            "description": "기기 상세 스펙 (CPU, RAM 등)"
           }
         },
         "required": [

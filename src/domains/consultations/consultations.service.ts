@@ -41,6 +41,7 @@ export class ConsultationsService {
     }
 
     const query = this.deviceRepository.createQueryBuilder('device')
+      .leftJoinAndSelect('device.spec', 'spec')
       .where('device.networkType = :networkType', { networkType })
       .andWhere('device.carrier = :carrier', { carrier });
 
@@ -72,6 +73,7 @@ export class ConsultationsService {
         publicSubsidy: device.publicSubsidy,
         releaseDate: device.releaseDate,
         principal,
+        specs: device.spec || null,
       };
     });
 
