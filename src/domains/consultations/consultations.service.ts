@@ -83,8 +83,8 @@ export class ConsultationsService {
     return result;
   }
 
-  async createQuote(dto: CreateQuoteDto): Promise<Quote> {
-    const { networkType, carrier, deviceId } = dto;
+  async createQuote(dto: CreateQuoteDto, user: any): Promise<Quote> {
+    const { networkType, carrier, deviceId, storeId } = dto;
 
     const device = await this.deviceRepository.findOne({ where: { id: deviceId } });
     if (!device) {
@@ -115,6 +115,8 @@ export class ConsultationsService {
         retailPrice: device.retailPrice,
         publicSubsidy: device.publicSubsidy,
         principal,
+        userId: user.id,
+        storeId: storeId || null,
       });
       savedQuote = await queryRunner.manager.save(Quote, quote);
 

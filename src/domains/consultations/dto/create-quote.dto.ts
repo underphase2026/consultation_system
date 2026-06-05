@@ -17,4 +17,8 @@ export class CreateQuoteDto {
   @IsString()
   @IsNotEmpty()
   deviceId: string;
+
+  @ApiProperty({ description: '매장 ID', required: false })
+  @IsString()
+  storeId?: string;
 }

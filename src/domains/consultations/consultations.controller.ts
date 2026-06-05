@@ -38,8 +38,11 @@ export class ConsultationsController {
     description: 'N+1 문제를 방지하기 위해 견적, 계약 상태, CRM 정보를 Aggregation하여 반환합니다.' 
   })
   @ApiResponse({ status: 200, type: [QuoteSummaryDto] })
-  async getQuoteSummary(@CurrentUser() user: User): Promise<QuoteSummaryDto[]> {
-    return this.quoteQueryService.getQuoteSummaryList(user.id);
+  async getQuoteSummary(
+    @CurrentUser() user: User,
+    @Query('storeId') storeId?: string
+  ): Promise<QuoteSummaryDto[]> {
+    return this.quoteQueryService.getQuoteSummaryList(user.id, storeId);
   }
 
   @Post('quotes')
@@ -50,8 +53,8 @@ export class ConsultationsController {
     description: '선택한 단말기 정보를 바탕으로 현재 가격 스냅샷을 포함한 견적을 생성합니다.' 
   })
   @ApiResponse({ status: 201, description: '성공적으로 견적을 생성했습니다.', type: Quote })
-  async createQuote(@Body() createQuoteDto: CreateQuoteDto): Promise<Quote> {
-    return this.consultationsService.createQuote(createQuoteDto);
+  async createQuote(@Body() createQuoteDto: CreateQuoteDto, @CurrentUser() user: User): Promise<Quote> {
+    return this.consultationsService.createQuote(createQuoteDto, user);
   }
 
   // @Post('devices/seed')

@@ -10,7 +10,7 @@ export class QuoteQueryService {
    * CQRS 읽기 전용 모델 (Read Model)
    * 여러 도메인(견적, 계약, CRM)의 데이터를 N+1 문제 없이 하나의 쿼리로 Aggregation
    */
-  async getQuoteSummaryList(userId?: string): Promise<QuoteSummaryDto[]> {
+  async getQuoteSummaryList(userId?: string, storeId?: string): Promise<QuoteSummaryDto[]> {
     const queryBuilder = this.dataSource.createQueryBuilder();
 
     // 1. Quotes를 메인으로 하고, 연관된 Devices 정보를 가져온다.
@@ -36,7 +36,10 @@ export class QuoteQueryService {
 
     // 조회 권한이 있는 경우 필터 (BFF 요청에 대응)
     if (userId) {
-      // queryBuilder.where('q.userId = :userId', { userId });
+      queryBuilder.andWhere('q.userId = :userId', { userId });
+    }
+    if (storeId) {
+      queryBuilder.andWhere('q.storeId = :storeId', { storeId });
     }
 
     queryBuilder.orderBy('q.createdAt', 'DESC');

@@ -1395,6 +1395,10 @@
           "deviceId": {
             "type": "string",
             "description": "선택된 단말기 ID"
+          },
+          "storeId": {
+            "type": "string",
+            "description": "매장 ID"
           }
         },
         "required": [
