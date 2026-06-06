@@ -19,6 +19,7 @@ const sms_auth_service_1 = require("./sms-auth.service");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const jwt_reset_strategy_1 = require("./strategies/jwt-reset.strategy");
 const users_module_1 = require("../users/users.module");
+const redis_module_1 = require("../../infrastructure/redis/redis.module");
 const sms_module_1 = require("../../infrastructure/sms/sms.module");
 let AuthModule = class AuthModule {
 };
@@ -27,6 +28,7 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
             users_module_1.UsersModule,
+            redis_module_1.RedisModule,
             sms_module_1.SmsModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.registerAsync({
