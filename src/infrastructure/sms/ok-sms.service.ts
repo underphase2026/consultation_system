@@ -59,6 +59,7 @@ export class OkSmsService {
         this.httpService.post(endpoint, formParams, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           responseType: 'text',
+          timeout: 5000,
         }),
       );
 

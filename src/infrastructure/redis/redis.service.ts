@@ -58,4 +58,41 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   isConnected(): boolean {
     return this.client.status === 'ready';
   }
+
+  /**
+   * 키의 값을 1 증가시키고, 키가 처음 생성될 때만 TTL(초)을 설정합니다.
+   * 일일 발송 횟수 제한 등에 사용됩니다.
+   */
+  async incrAndExpire(key: string, ttlSeconds: number): Promise<number> {
+    const multi = this.client.multi();
+    multi.incr(key);
+    // 최초 생성 시에만 TTL 설정 (NX)
+    multi.expire(key, ttlSeconds, 'NX');
+    const results = await multi.exec();
+    
+    if (!results) {
+      throw new Error('Redis multi execution failed');
+    }
+    
+    // incr의 결과값을 반환
+    return results[0][1] as number;
+  }
+
+  /**
+   * 키의 값을 조회하여 expectedHash와 일치하면 원자적으로 삭제합니다. (Lua Script 활용)
+   * Race Condition 방지에 사용됩니다.
+   */
+  async verifyAndDelete(key: string, expectedHash: string): Promise<boolean> {
+    const luaScript = `
+      local val = redis.call('GET', KEYS[1])
+      if val == ARGV[1] then
+        redis.call('DEL', KEYS[1])
+        return 1
+      else
+        return 0
+      end
+    `;
+    const result = await this.client.eval(luaScript, 1, key, expectedHash);
+    return result === 1;
+  }
 }
