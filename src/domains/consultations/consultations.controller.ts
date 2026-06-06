@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ConsultationsService } from './consultations.service';
 import { GetDevicesQueryDto, DeviceResponseDto } from './dto/get-devices.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
+import { UpdateDraftTabsDto } from './dto/update-draft-tabs.dto';
 import { Quote } from './entities/quote.entity';
 import { QuoteQueryService } from './quote-query.service';
 import { QuoteSummaryDto } from './dto/quote-summary.dto';
@@ -55,6 +56,27 @@ export class ConsultationsController {
   @ApiResponse({ status: 201, description: '성공적으로 견적을 생성했습니다.', type: Quote })
   async createQuote(@Body() createQuoteDto: CreateQuoteDto, @CurrentUser() user: User): Promise<Quote> {
     return this.consultationsService.createQuote(createQuoteDto, user);
+  }
+
+  @Get('draft-tabs')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '임시 견적 탭 조회', description: '사용자의 진행 중인 임시 견적 탭 상태를 조회합니다.' })
+  async getDraftTabs(@CurrentUser() user: User) {
+    const userTabs = await this.consultationsService.getDraftTabs(user.id);
+    if (!userTabs) {
+      return { success: true, data: null };
+    }
+    return { success: true, data: userTabs };
+  }
+
+  @Put('draft-tabs')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '임시 견적 탭 저장', description: '사용자의 진행 중인 임시 견적 탭 상태를 저장합니다.' })
+  async updateDraftTabs(@Body() dto: UpdateDraftTabsDto, @CurrentUser() user: User) {
+    const userTabs = await this.consultationsService.upsertDraftTabs(user.id, dto);
+    return { success: true, data: userTabs };
   }
 
   // @Post('devices/seed')

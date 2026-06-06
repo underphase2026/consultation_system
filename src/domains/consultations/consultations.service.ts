@@ -12,6 +12,8 @@ import { NetworkType, Carrier } from './entities/device.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { QuoteCreatedEvent } from './events/quote-created.event';
 import { EventOutbox, OutboxStatus } from './entities/event-outbox.entity';
+import { UserTabs } from './entities/user-tabs.entity';
+import { UpdateDraftTabsDto } from './dto/update-draft-tabs.dto';
 
 @Injectable()
 export class ConsultationsService {
@@ -24,6 +26,8 @@ export class ConsultationsService {
     private readonly quoteRepository: Repository<Quote>,
     @InjectRepository(EventOutbox)
     private readonly outboxRepository: Repository<EventOutbox>,
+    @InjectRepository(UserTabs)
+    private readonly userTabsRepository: Repository<UserTabs>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly eventEmitter: EventEmitter2,
     private readonly dataSource: DataSource,
@@ -116,7 +120,7 @@ export class ConsultationsService {
         publicSubsidy: device.publicSubsidy,
         principal,
         userId: user.id,
-        storeId: storeId || null,
+        storeId: storeId || undefined,
       });
       savedQuote = await queryRunner.manager.save(Quote, quote);
 
@@ -223,5 +227,24 @@ export class ConsultationsService {
     }
 
     await this.deviceRepository.save(newDevices);
+  }
+
+  async getDraftTabs(userId: string): Promise<UserTabs | null> {
+    return this.userTabsRepository.findOne({ where: { userId } });
+  }
+
+  async upsertDraftTabs(userId: string, dto: UpdateDraftTabsDto): Promise<UserTabs> {
+    let userTabs = await this.userTabsRepository.findOne({ where: { userId } });
+    if (!userTabs) {
+      userTabs = this.userTabsRepository.create({
+        userId,
+        tabsData: dto.tabsData,
+        activeTabId: dto.activeTabId,
+      });
+    } else {
+      userTabs.tabsData = dto.tabsData;
+      userTabs.activeTabId = dto.activeTabId;
+    }
+    return this.userTabsRepository.save(userTabs);
   }
 }

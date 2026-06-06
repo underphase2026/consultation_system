@@ -696,7 +696,16 @@
       "get": {
         "description": "N+1 문제를 방지하기 위해 견적, 계약 상태, CRM 정보를 Aggregation하여 반환합니다.",
         "operationId": "ConsultationsController_getQuoteSummary",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "storeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -758,6 +767,136 @@
         "summary": "통합 견적 생성 API",
         "tags": [
           "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      }
+    },
+    "/api/api/consultations/draft-tabs": {
+      "get": {
+        "description": "사용자의 진행 중인 임시 견적 탭 상태를 조회합니다.",
+        "operationId": "ConsultationsController_getDraftTabs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "임시 견적 탭 조회",
+        "tags": [
+          "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      },
+      "put": {
+        "description": "사용자의 진행 중인 임시 견적 탭 상태를 저장합니다.",
+        "operationId": "ConsultationsController_updateDraftTabs",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDraftTabsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "임시 견적 탭 저장",
+        "tags": [
+          "Consultations (통합 유무선 상담 및 견적)"
+        ]
+      }
+    },
+    "/api/api/consultations/temp-quotes": {
+      "post": {
+        "description": "선택한 기기 정보를 바탕으로 임시 견적을 생성합니다.",
+        "operationId": "TempQuoteController_createTempQuote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTempQuoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공적으로 임시 견적을 생성했습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "임시 견적 등록 API",
+        "tags": [
+          "Temp Quotes (임시 견적)"
+        ]
+      },
+      "get": {
+        "description": "로그인된 사용자가 보유한 조회 가능한 임시 견적 리스트를 반환합니다.",
+        "operationId": "TempQuoteController_getTempQuotes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공적으로 리스트를 반환했습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "임시 견적 리스트 조회 API",
+        "tags": [
+          "Temp Quotes (임시 견적)"
+        ]
+      }
+    },
+    "/api/api/consultations/temp-quotes/{id}": {
+      "delete": {
+        "description": "지정된 임시 견적의 isActive 플래그를 false로 변경합니다.",
+        "operationId": "TempQuoteController_deleteTempQuote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공적으로 삭제 처리되었습니다."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "임시 견적 삭제 (비활성화)",
+        "tags": [
+          "Temp Quotes (임시 견적)"
         ]
       }
     }
@@ -1408,6 +1547,30 @@
         ]
       },
       "Quote": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateDraftTabsDto": {
+        "type": "object",
+        "properties": {
+          "tabsData": {
+            "description": "저장된 탭 배열 데이터 (JSON)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeTabId": {
+            "type": "string",
+            "description": "현재 활성화된 탭 ID"
+          }
+        },
+        "required": [
+          "tabsData",
+          "activeTabId"
+        ]
+      },
+      "CreateTempQuoteDto": {
         "type": "object",
         "properties": {}
       }
