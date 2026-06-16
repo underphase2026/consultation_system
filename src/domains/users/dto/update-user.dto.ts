@@ -29,4 +29,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   marketingAgreed?: boolean;
+
+  @ApiPropertyOptional({ description: '이메일' })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiPropertyOptional({ description: '생년월일 (YYYY-MM-DD)' })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
 }

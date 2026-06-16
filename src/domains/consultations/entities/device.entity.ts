@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, OneToOne } from 'typeorm';
+import { DeviceSpec } from './device-spec.entity';
 
 export enum NetworkType {
   WIRELESS = 'WIRELESS',
@@ -37,6 +38,12 @@ export class Device {
 
   @Column({ type: 'int', default: 0, comment: '공시지원금' })
   publicSubsidy: number;
+
+  @Column({ type: 'date', nullable: true, comment: '출시일' })
+  releaseDate: Date;
+
+  @OneToOne(() => DeviceSpec, spec => spec.device, { cascade: true })
+  spec: DeviceSpec;
 
   @CreateDateColumn()
   createdAt: Date;

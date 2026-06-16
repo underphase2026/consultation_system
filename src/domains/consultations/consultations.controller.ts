@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ConsultationsService } from './consultations.service';
 import { GetDevicesQueryDto, DeviceResponseDto } from './dto/get-devices.dto';
 import { CreateQuoteDto } from './dto/create-quote.dto';
+import { UpdateDraftTabsDto } from './dto/update-draft-tabs.dto';
 import { Quote } from './entities/quote.entity';
 import { QuoteQueryService } from './quote-query.service';
 import { QuoteSummaryDto } from './dto/quote-summary.dto';
@@ -38,8 +39,11 @@ export class ConsultationsController {
     description: 'N+1 문제를 방지하기 위해 견적, 계약 상태, CRM 정보를 Aggregation하여 반환합니다.' 
   })
   @ApiResponse({ status: 200, type: [QuoteSummaryDto] })
-  async getQuoteSummary(@CurrentUser() user: User): Promise<QuoteSummaryDto[]> {
-    return this.quoteQueryService.getQuoteSummaryList(user.id);
+  async getQuoteSummary(
+    @CurrentUser() user: User,
+    @Query('storeId') storeId?: string
+  ): Promise<QuoteSummaryDto[]> {
+    return this.quoteQueryService.getQuoteSummaryList(user.id, storeId);
   }
 
   @Post('quotes')
@@ -50,7 +54,39 @@ export class ConsultationsController {
     description: '선택한 단말기 정보를 바탕으로 현재 가격 스냅샷을 포함한 견적을 생성합니다.' 
   })
   @ApiResponse({ status: 201, description: '성공적으로 견적을 생성했습니다.', type: Quote })
-  async createQuote(@Body() createQuoteDto: CreateQuoteDto): Promise<Quote> {
-    return this.consultationsService.createQuote(createQuoteDto);
+  async createQuote(@Body() createQuoteDto: CreateQuoteDto, @CurrentUser() user: User): Promise<Quote> {
+    return this.consultationsService.createQuote(createQuoteDto, user);
   }
+
+  @Get('draft-tabs')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '임시 견적 탭 조회', description: '사용자의 진행 중인 임시 견적 탭 상태를 조회합니다.' })
+  async getDraftTabs(@CurrentUser() user: User) {
+    const userTabs = await this.consultationsService.getDraftTabs(user.id);
+    if (!userTabs) {
+      return { success: true, data: null };
+    }
+    return { success: true, data: userTabs };
+  }
+
+  @Put('draft-tabs')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '임시 견적 탭 저장', description: '사용자의 진행 중인 임시 견적 탭 상태를 저장합니다.' })
+  async updateDraftTabs(@Body() dto: UpdateDraftTabsDto, @CurrentUser() user: User) {
+    const userTabs = await this.consultationsService.upsertDraftTabs(user.id, dto);
+    return { success: true, data: userTabs };
+  }
+
+  // @Post('devices/seed')
+  // @ApiOperation({ summary: '예시 단말기 데이터 생성' })
+  // async seedDevices() {
+  //   try {
+  //     await this.consultationsService.seedDevices();
+  //     return { success: true, message: 'Seeded devices successfully' };
+  //   } catch (error: any) {
+  //     return { success: false, error: error.message, stack: error.stack };
+  //   }
+  // }
 }

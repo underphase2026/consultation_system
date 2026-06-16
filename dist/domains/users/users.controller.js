@@ -32,11 +32,9 @@ let UsersController = class UsersController {
     async getAllUsers() {
         return [];
     }
-    async getUserById(userId) {
-        return { id: userId };
-    }
     async getMe(user) {
         return {
+            id: user.id,
             name: user.name,
             phoneNumber: user.phoneNumber,
             birthDate: user.birthDate ?? null,
@@ -45,6 +43,9 @@ let UsersController = class UsersController {
             marketingAgreed: user.terms?.marketingAgreed ?? false,
             role: user.role,
         };
+    }
+    async getUserById(userId) {
+        return { id: userId };
     }
     async updateMe(user, dto) {
         const updated = await this.usersService.update(user.id, dto);
@@ -67,6 +68,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getAllUsers", null);
 __decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: '내 정보 조회' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: '내 정보 반환', type: user_response_dto_1.UserProfileResponseDto }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getMe", null);
+__decorate([
     (0, common_1.Get)(':user_id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.OWNER),
@@ -78,16 +89,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getUserById", null);
-__decorate([
-    (0, common_1.Get)('me'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: '내 정보 조회' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: '내 정보 반환', type: user_response_dto_1.UserProfileResponseDto }),
-    __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [user_entity_1.User]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "getMe", null);
 __decorate([
     (0, common_1.Patch)('me'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

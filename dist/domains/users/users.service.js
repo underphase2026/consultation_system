@@ -127,6 +127,10 @@ let UsersService = class UsersService {
         }
         if (dto.name)
             user.name = dto.name;
+        if (dto.email !== undefined)
+            user.email = dto.email;
+        if (dto.birthDate !== undefined)
+            user.birthDate = dto.birthDate;
         if (dto.password) {
             user.password = await bcrypt.hash(dto.password, 10);
         }

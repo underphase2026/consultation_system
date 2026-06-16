@@ -10,13 +10,13 @@ import { SmsAuthService } from './sms-auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtResetStrategy } from './strategies/jwt-reset.strategy';
 import { UsersModule } from '../users/users.module';
-// import { RedisModule } from '../../infrastructure/redis/redis.module'; // Redis 사용 안함
+import { RedisModule } from '../../infrastructure/redis/redis.module';
 import { SmsModule } from '../../infrastructure/sms/sms.module';
 
 @Module({
   imports: [
     UsersModule,
-    // RedisModule, // Redis 사용 안함
+    RedisModule,
     SmsModule,
     PassportModule,
     JwtModule.registerAsync({

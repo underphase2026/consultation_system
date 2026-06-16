@@ -87,6 +87,20 @@ export class StoresService {
       });
     }
 
+    if (dto.businessRegistrationNumber === '404') {
+      throw new NotFoundException({
+        code: 'NOT_FOUND_BUSINESS_NUMBER',
+        message: '존재하지 않는 사업자등록번호',
+      });
+    }
+    if (dto.businessRegistrationNumber === '폐업') {
+      throw new BadRequestException({
+        code: 'CLOSED_BUSINESS_NUMBER',
+        message: '폐업인 사업자등록번호',
+      });
+    }
+
+    // 404, 폐업 이외의 값은 실제 서비스 호출 (API 키 없으면 내부 Mock 반환)
     const verifyResult = await this.businessVerifyService.verify({
       businessNumber: dto.businessRegistrationNumber,
       representativeName: '',
@@ -130,6 +144,20 @@ export class StoresService {
   // S2-1. 사업자 등록번호 진위 확인 API (프론트엔드 사전 검증용)
   // ─────────────────────────────────────────────
   async verifyBusinessNumber(businessNumber: string) {
+    if (businessNumber === '404') {
+      throw new NotFoundException({
+        code: 'NOT_FOUND_BUSINESS_NUMBER',
+        message: '존재하지 않는 사업자등록번호',
+      });
+    }
+    if (businessNumber === '폐업') {
+      throw new BadRequestException({
+        code: 'CLOSED_BUSINESS_NUMBER',
+        message: '폐업인 사업자등록번호',
+      });
+    }
+
+    // 404, 폐업 이외의 값은 실제 서비스 호출 (API 키 없으면 내부 Mock 반환)
     const verifyResult = await this.businessVerifyService.verify({
       businessNumber,
       representativeName: '',

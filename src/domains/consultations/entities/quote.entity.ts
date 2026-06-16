@@ -35,6 +35,12 @@ export class Quote {
   @Column({ nullable: true, comment: '전자계약 ID (향후 전자계약 프로세스로 전환 시 연동용)' })
   contractId: number;
 
+  @Column({ name: 'user_id', comment: '견적을 생성한 계정 ID', nullable: true })
+  userId: string;
+
+  @Column({ name: 'store_id', comment: '견적을 생성한 매장 ID', nullable: true })
+  storeId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

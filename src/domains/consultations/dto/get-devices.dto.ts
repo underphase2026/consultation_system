@@ -49,6 +49,12 @@ export class DeviceResponseDto {
   @ApiProperty({ description: '공시지원금' })
   publicSubsidy: number;
 
+  @ApiProperty({ description: '출시일 (YYYY-MM-DD 형식)' })
+  releaseDate: Date;
+
   @ApiProperty({ description: '할부원금 (출고가 - 공시지원금)' })
   principal: number;
+
+  @ApiPropertyOptional({ description: '기기 상세 스펙 (CPU, RAM 등)' })
+  specs?: any;
 }

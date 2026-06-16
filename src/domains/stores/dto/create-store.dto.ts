@@ -18,9 +18,9 @@ export class CreateStoreDto {
   @IsString()
   storeName: string;
 
-  @ApiProperty({ example: '1234567890', description: '사업자 등록번호 (10자리, 하이픈 없이)' })
-  @IsNumberString({}, { message: '사업자 등록번호는 숫자만 입력해주세요.' })
-  @Length(10, 10, { message: '사업자 등록번호는 10자리여야 합니다.' })
+  @ApiProperty({ example: '1234567890', description: '사업자 등록번호 (어떤 형태든 입력 가능)' })
+  @IsString()
+  @IsNotEmpty({ message: '사업자등록번호를 입력해주세요.' })
   businessRegistrationNumber: string;
 
   @ApiProperty({ example: '06234', description: '우편번호' })

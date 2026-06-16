@@ -26,7 +26,7 @@ export class ElectronicContract {
   })
   status: ElectronicContractStatus;
 
-  @Column({ type: 'jsonb', nullable: true, comment: '서명자 정보 (이름, 연락처, 이메일 등)' })
+  @Column({ type: 'json', nullable: true, comment: '서명자 정보 (이름, 연락처, 이메일 등)' })
   signerInfo: any;
 
   @Column({ type: 'timestamp', nullable: true, comment: '서명 완료 일시' })
